@@ -1,33 +1,31 @@
 import { NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase';
-import { initialNodes } from '@/lib/mock-data';
+import { db, schema } from '@/lib/db';
+import { ensureDatabaseSeeded } from '@/lib/db/seed';
+import { eq, desc, sql } from 'drizzle-orm';
+import { config } from '@/lib/config';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const networkId = searchParams.get('networkId');
+  try {
+    await ensureDatabaseSeeded();
+    const { searchParams } = new URL(request.url);
+    const networkId = searchParams.get('networkId');
 
-  const supabase = getServiceSupabase();
-  if (supabase) {
-    try {
-      let query = supabase.from('nodes').select('*').order('created_at', { ascending: false });
-      if (networkId && networkId !== 'all') {
-        query = query.eq('network_id', networkId);
-      }
-      const { data, error } = await query;
-      if (!error && data && data.length > 0) {
-        return NextResponse.json({ success: true, source: 'supabase', data });
-      }
-    } catch {
-      // Fallback below
+    let query = db.select().from(schema.nodes).orderBy(desc(schema.nodes.createdAt));
+    if (networkId && networkId !== 'all') {
+      const filtered = await db
+        .select()
+        .from(schema.nodes)
+        .where(eq(schema.nodes.networkId, networkId))
+        .orderBy(desc(schema.nodes.createdAt));
+      return NextResponse.json({ success: true, data: filtered });
     }
-  }
 
-  let nodes = initialNodes;
-  if (networkId && networkId !== 'all') {
-    nodes = nodes.filter((n) => n.network_id === networkId);
+    const nodesList = await query;
+    return NextResponse.json({ success: true, data: nodesList });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true, source: 'mock', data: nodes });
 }
 
 export async function POST(request: Request) {
@@ -35,53 +33,111 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, networkId, nodeType, capacityTb, osInfo, organizationId } = body;
 
-    const nodeCode = `NODE-${nodeType === 'ryve_provided' ? 'RYV' : 'USR'}-${Math.floor(10 + Math.random() * 90)}`;
+    const orgId = organizationId || config.defaultOrgId;
+    const prefix = nodeType === 'ryve_provided' ? 'RYV' : 'NODE';
+    const nodeCode = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
     const totalBytes = (capacityTb || 1) * 1000000000000;
-    const supabase = getServiceSupabase();
+    const usedBytes = nodeType === 'ryve_provided' ? 0 : Math.floor(totalBytes * 0.15);
 
-    if (supabase) {
-      const { data, error } = await supabase.from('nodes').insert([
-        {
-          node_id_code: nodeCode,
-          network_id: networkId,
-          organization_id: organizationId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          name,
-          node_type: nodeType || 'customer_owned',
-          ip_address: `192.168.10.${Math.floor(20 + Math.random() * 200)}`,
-          total_storage_bytes: totalBytes,
-          used_storage_bytes: 0,
-          status: 'healthy',
-          health_score: 100,
-          os_info: osInfo || 'Ubuntu 24.04 LTS (x86_64)',
-        }
-      ]).select().single();
+    const [newNode] = await db
+      .insert(schema.nodes)
+      .values({
+        nodeIdCode: nodeCode,
+        networkId,
+        organizationId: orgId,
+        name,
+        nodeType: nodeType || 'customer_owned',
+        ipAddress: `192.168.10.${Math.floor(20 + Math.random() * 200)}`,
+        totalStorageBytes: totalBytes,
+        usedStorageBytes: usedBytes,
+        status: 'healthy',
+        healthScore: 99,
+        latencyMs: Math.floor(10 + Math.random() * 20),
+        uptimePct: '100.00',
+        version: 'v1.4.2-p2p',
+        osInfo: osInfo || 'Ubuntu Server 24.04 (x86_64)',
+        lastHeartbeat: 'Just now',
+      })
+      .returning();
 
-      if (!error && data) {
-        return NextResponse.json({ success: true, data });
-      }
+    // Increment network metrics
+    await db
+      .update(schema.networks)
+      .set({
+        nodeCount: sql`${schema.networks.nodeCount} + 1`,
+        totalStorageBytes: sql`${schema.networks.totalStorageBytes} + ${totalBytes}`,
+        usedStorageBytes: sql`${schema.networks.usedStorageBytes} + ${usedBytes}`,
+      })
+      .where(eq(schema.networks.id, networkId));
+
+    // Audit log
+    await db.insert(schema.auditLogs).values({
+      organizationId: orgId,
+      userName: 'Alex Rivers',
+      userEmail: 'alex@acme.corp',
+      action: nodeType === 'ryve_provided' ? 'STORAGE_PROVISIONED' : 'NODE_ENROLLED',
+      targetType: 'node',
+      targetId: nodeCode,
+      details: `${nodeType === 'ryve_provided' ? 'Provisioned dedicated Ryve pod' : 'Enrolled hardware node'} "${name}" (${capacityTb} TB)`,
+      ipAddress: '127.0.0.1',
+      createdAt: 'Just now',
+    });
+
+    return NextResponse.json({ success: true, data: newNode });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Node ID is required' }, { status: 400 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: `node-${Date.now()}`,
-        node_id_code: nodeCode,
-        name,
-        network_id: networkId,
-        node_type: nodeType || 'customer_owned',
-        ip_address: `192.168.10.${Math.floor(20 + Math.random() * 200)}`,
-        total_storage_bytes: totalBytes,
-        used_storage_bytes: 0,
-        status: 'healthy',
-        health_score: 100,
-        latency_ms: 15,
-        last_heartbeat: 'Just now',
-        version: 'v1.4.2-p2p',
-        os_info: osInfo || 'Ubuntu 24.04 LTS (x86_64)',
-        uptime_pct: 100.0,
-        created_at: new Date().toISOString(),
-      }
-    });
+    const [deletedNode] = await db.delete(schema.nodes).where(eq(schema.nodes.id, id)).returning();
+    if (deletedNode) {
+      // Decrement network metrics
+      await db
+        .update(schema.networks)
+        .set({
+          nodeCount: sql`GREATEST(0, ${schema.networks.nodeCount} - 1)`,
+          totalStorageBytes: sql`GREATEST(0, ${schema.networks.totalStorageBytes} - ${deletedNode.totalStorageBytes})`,
+          usedStorageBytes: sql`GREATEST(0, ${schema.networks.usedStorageBytes} - ${deletedNode.usedStorageBytes})`,
+        })
+        .where(eq(schema.networks.id, deletedNode.networkId));
+    }
+
+    return NextResponse.json({ success: true, message: 'Node revoked and removed' });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, status } = body;
+    if (!id || !status) {
+      return NextResponse.json({ success: false, error: 'ID and status required' }, { status: 400 });
+    }
+
+    const healthScore = status === 'healthy' ? 99 : status === 'warning' ? 70 : 0;
+    const [updatedNode] = await db
+      .update(schema.nodes)
+      .set({
+        status,
+        healthScore,
+        lastHeartbeat: status === 'offline' ? '28m ago' : 'Just now',
+      })
+      .where(eq(schema.nodes.id, id))
+      .returning();
+
+    return NextResponse.json({ success: true, data: updatedNode });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ success: false, error: message }, { status: 500 });

@@ -29,7 +29,6 @@ export function Navbar() {
     stats,
     openAddNodeModal,
     auditLogs,
-    isSupabaseActive,
     addToast
   } = useRyve();
 
@@ -141,13 +140,13 @@ export function Navbar() {
 
       {/* Right Controls: Mesh Status, Role Selector, Quick Action, Notifications, User */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Supabase Status Pill */}
+        {/* Drizzle ORM Status Pill */}
         <div 
-          title={isSupabaseActive ? "Connected directly to Supabase Backend" : "Operating in local zero-latency resilient store (Supabase credentials not set)"}
+          title="Drizzle ORM Type-Safe Postgres Engine"
           className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-zinc-200 bg-zinc-50 text-[10px] font-mono text-zinc-600"
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseActive ? 'bg-emerald-500' : 'bg-cyan-500'}`}></span>
-          <span>{isSupabaseActive ? 'Supabase Connected' : 'Resilient Store'}</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Drizzle ORM Engine</span>
         </div>
 
         {/* Global Mesh Live Pulse */}

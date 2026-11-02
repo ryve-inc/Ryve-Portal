@@ -17,19 +17,303 @@ import {
   NodeType,
   NodeStatus
 } from '@/types/ryve';
-import { 
-  initialOrganization, 
-  initialMembers, 
-  initialNetworks, 
-  initialNodes, 
-  initialFiles, 
-  initialEnrollmentCodes, 
-  initialStorageRequests, 
-  initialAuditLogs, 
-  initialApiKeys, 
-  initialInvoices 
-} from './mock-data';
-import { supabase, isSupabaseConfigured } from './supabase';
+
+// Default initial state (without external mock files)
+const defaultOrganization: Organization = {
+  id: 'org-ryve-primary',
+  name: 'SJCET Distributed Labs',
+  slug: 'sjcet-labs',
+  org_type: 'academic',
+  plan: 'pro_managed',
+  max_networks: 10,
+  created_at: '2026-01-15T08:00:00Z',
+};
+
+const defaultMembers: OrganizationMember[] = [
+  {
+    id: 'mem-1',
+    organization_id: 'org-ryve-primary',
+    user_id: 'usr-1',
+    name: 'Alex Rivers',
+    email: 'alex@acme.corp',
+    role: 'owner',
+    mfa_enabled: true,
+    joined_at: '2026-01-15T08:00:00Z',
+  },
+  {
+    id: 'mem-2',
+    organization_id: 'org-ryve-primary',
+    user_id: 'usr-2',
+    name: 'Sarah Chen',
+    email: 'sarah@acme.corp',
+    role: 'admin',
+    mfa_enabled: true,
+    joined_at: '2026-02-01T10:30:00Z',
+  },
+  {
+    id: 'mem-3',
+    organization_id: 'org-ryve-primary',
+    user_id: 'usr-3',
+    name: 'David Miller',
+    email: 'david@acme.corp',
+    role: 'member',
+    mfa_enabled: false,
+    joined_at: '2026-03-11T14:15:00Z',
+  },
+];
+
+const defaultNetworks: Network[] = [
+  {
+    id: 'net-1',
+    network_id_code: 'RYV-NET-8492',
+    organization_id: 'org-ryve-primary',
+    name: 'SJCET Lab Network',
+    description: 'High-speed campus mesh connecting lab servers and Ryve managed pods',
+    region: 'ap-south-1',
+    status: 'healthy',
+    redundancy_policy: 'Reed-Solomon (8+4)',
+    encryption_standard: 'AES-256-GCM Zero-Knowledge',
+    created_at: '2026-01-16T12:00:00Z',
+    total_storage_bytes: 8400000000000,
+    used_storage_bytes: 3120000000000,
+    node_count: 5,
+  },
+  {
+    id: 'net-2',
+    network_id_code: 'RYV-NET-4029',
+    organization_id: 'org-ryve-primary',
+    name: 'Production Storage Mesh',
+    description: 'Mission-critical distributed storage across rack servers and NVMe blocks',
+    region: 'us-east-1',
+    status: 'healthy',
+    redundancy_policy: 'Reed-Solomon (8+4)',
+    encryption_standard: 'AES-256-GCM Zero-Knowledge',
+    created_at: '2026-02-10T09:40:00Z',
+    total_storage_bytes: 18400000000000,
+    used_storage_bytes: 8200000000000,
+    node_count: 6,
+  },
+];
+
+const defaultNodes: NodeDevice[] = [
+  {
+    id: 'node-1',
+    node_id_code: 'NODE-SJC-01',
+    network_id: 'net-1',
+    organization_id: 'org-ryve-primary',
+    name: 'Lab Server Alpha (Rack 01)',
+    node_type: 'customer_owned',
+    ip_address: '192.168.10.24',
+    total_storage_bytes: 2000000000000,
+    used_storage_bytes: 840000000000,
+    status: 'healthy',
+    health_score: 99,
+    latency_ms: 12,
+    last_heartbeat: 'Just now',
+    version: 'v1.4.2-p2p',
+    os_info: 'Ubuntu Server 24.04 LTS (x86_64)',
+    uptime_pct: 99.98,
+    created_at: '2026-01-16T13:00:00Z',
+  },
+  {
+    id: 'node-2',
+    node_id_code: 'NODE-SJC-02',
+    network_id: 'net-1',
+    organization_id: 'org-ryve-primary',
+    name: 'CS Dept Synology NAS-8B',
+    node_type: 'customer_owned',
+    ip_address: '192.168.10.88',
+    total_storage_bytes: 2400000000000,
+    used_storage_bytes: 1120000000000,
+    status: 'healthy',
+    health_score: 97,
+    latency_ms: 16,
+    last_heartbeat: 'Just now',
+    version: 'v1.4.2-p2p',
+    os_info: 'DSM 7.2 (Linux 5.10)',
+    uptime_pct: 99.85,
+    created_at: '2026-01-16T14:20:00Z',
+  },
+  {
+    id: 'node-3',
+    node_id_code: 'NODE-SJC-03',
+    network_id: 'net-1',
+    organization_id: 'org-ryve-primary',
+    name: 'Ryve Managed Edge Pod 01',
+    node_type: 'ryve_provided',
+    ip_address: '43.204.18.91',
+    total_storage_bytes: 2000000000000,
+    used_storage_bytes: 620000000000,
+    status: 'healthy',
+    health_score: 100,
+    latency_ms: 22,
+    last_heartbeat: 'Just now',
+    version: 'v1.4.2-p2p',
+    os_info: 'RyveOS Alpine Container (NVMe High-IOPS)',
+    uptime_pct: 100.0,
+    created_at: '2026-02-05T10:00:00Z',
+  },
+  {
+    id: 'node-4',
+    node_id_code: 'NODE-PRD-01',
+    network_id: 'net-2',
+    organization_id: 'org-ryve-primary',
+    name: 'Primary Cluster Master 01',
+    node_type: 'customer_owned',
+    ip_address: '10.0.12.50',
+    total_storage_bytes: 5000000000000,
+    used_storage_bytes: 2400000000000,
+    status: 'healthy',
+    health_score: 98,
+    latency_ms: 9,
+    last_heartbeat: 'Just now',
+    version: 'v1.4.2-p2p',
+    os_info: 'RHEL 9.3 (x86_64)',
+    uptime_pct: 99.99,
+    created_at: '2026-02-10T10:00:00Z',
+  },
+  {
+    id: 'node-5',
+    node_id_code: 'NODE-PRD-02',
+    network_id: 'net-2',
+    organization_id: 'org-ryve-primary',
+    name: 'Ryve Provisioned Block S3-Compat',
+    node_type: 'ryve_provided',
+    ip_address: '54.210.82.14',
+    total_storage_bytes: 6000000000000,
+    used_storage_bytes: 2800000000000,
+    status: 'healthy',
+    health_score: 100,
+    latency_ms: 15,
+    last_heartbeat: 'Just now',
+    version: 'v1.4.2-p2p',
+    os_info: 'Ryve Dedicated Datacenter Node (Virginia)',
+    uptime_pct: 100.0,
+    created_at: '2026-02-12T14:30:00Z',
+  },
+];
+
+const defaultFiles: FileItem[] = [
+  {
+    id: 'file-1',
+    organization_id: 'org-ryve-primary',
+    network_id: 'net-1',
+    network_name: 'SJCET Lab Network',
+    name: 'distributed_ml_checkpoint_epoch_48.safetensors',
+    path: '/models/ai/2026/',
+    size_bytes: 4294967296,
+    mime_type: 'application/octet-stream',
+    is_public: false,
+    chunks_count: 12,
+    data_chunks: 8,
+    parity_chunks: 4,
+    encryption_algorithm: 'AES-256-GCM',
+    uploaded_by: 'Alex Rivers',
+    created_at: '2026-03-28T14:30:00Z',
+    hash: 'sha256-9f83ac02d3381a179c3b88a9e201c9a',
+  },
+  {
+    id: 'file-2',
+    organization_id: 'org-ryve-primary',
+    network_id: 'net-2',
+    network_name: 'Production Storage Mesh',
+    name: 'postgresql_db_cluster_snapshot_full.tar.zst',
+    path: '/backups/databases/',
+    size_bytes: 15032385536,
+    mime_type: 'application/zstd',
+    is_public: false,
+    chunks_count: 12,
+    data_chunks: 8,
+    parity_chunks: 4,
+    encryption_algorithm: 'AES-256-GCM',
+    uploaded_by: 'Sarah Chen',
+    created_at: '2026-03-30T04:00:00Z',
+    hash: 'sha256-ee0498b31a29384910cf321ba99d211',
+  },
+];
+
+const defaultEnrollmentCodes: EnrollmentCode[] = [
+  {
+    id: 'enr-1',
+    network_id: 'net-1',
+    network_name: 'SJCET Lab Network',
+    code: 'RYV-ENR-9821-XA7',
+    created_by: 'Alex Rivers',
+    max_uses: 10,
+    current_uses: 2,
+    is_active: true,
+    created_at: '2026-03-30T10:00:00Z',
+    expires_at: '2026-04-06T10:00:00Z',
+  },
+];
+
+const defaultStorageRequests: StorageRequest[] = [
+  {
+    id: 'req-1',
+    organization_id: 'org-ryve-primary',
+    network_id: 'net-1',
+    network_name: 'SJCET Lab Network',
+    requested_capacity_tb: 2,
+    billing_cycle: 'monthly',
+    price_per_month_usd: 8.0,
+    status: 'active',
+    provisioned_node_id: 'node-3',
+    created_at: '2026-02-05T09:45:00Z',
+  },
+];
+
+const defaultAuditLogs: AuditLog[] = [
+  {
+    id: 'aud-1',
+    organization_id: 'org-ryve-primary',
+    user_name: 'Alex Rivers',
+    user_email: 'alex@acme.corp',
+    action: 'NODE_ENROLLED',
+    target_type: 'node',
+    target_id: 'NODE-SJC-02',
+    details: 'Customer node joined SJCET Lab Network via enrollment code RYV-ENR-9821-XA7',
+    ip_address: '192.168.10.88',
+    created_at: 'Just now',
+  },
+  {
+    id: 'aud-2',
+    organization_id: 'org-ryve-primary',
+    user_name: 'Sarah Chen',
+    user_email: 'sarah@acme.corp',
+    action: 'STORAGE_PROVISIONED',
+    target_type: 'storage_request',
+    target_id: 'NODE-PRD-02',
+    details: 'Provisioned 6 TB dedicated Ryve High-IOPS NVMe pod under Production Storage Mesh',
+    ip_address: '54.210.82.14',
+    created_at: '15 mins ago',
+  },
+];
+
+const defaultApiKeys: ApiKey[] = [
+  {
+    id: 'key-1',
+    organization_id: 'org-ryve-primary',
+    name: 'CI/CD Automated Deployment Daemon',
+    key_prefix: 'ryve_live_89a3f2819c',
+    permissions: ['nodes:read', 'files:read', 'files:write'],
+    created_at: '2026-03-10T12:00:00Z',
+    last_used_at: '12 minutes ago',
+  },
+];
+
+const defaultInvoices: Invoice[] = [
+  {
+    id: 'inv-1',
+    organization_id: 'org-ryve-primary',
+    invoice_number: 'INV-RYV-2026-03',
+    amount_usd: 32.0,
+    status: 'paid',
+    period_start: '2026-03-01',
+    period_end: '2026-03-31',
+    paid_at: '2026-04-01T00:05:00Z',
+    storage_tb_billed: 8.0,
+  },
+];
 
 interface ToastMessage {
   id: string;
@@ -39,13 +323,11 @@ interface ToastMessage {
 }
 
 interface RyveContextType {
-  // Navigation / Portal State
   currentView: string;
   setCurrentView: (view: string) => void;
-  selectedNetworkId: string; // 'all' or specific network id
+  selectedNetworkId: string;
   setSelectedNetworkId: (id: string) => void;
   
-  // Organization & Roles
   organization: Organization;
   updateOrganization: (updates: Partial<Organization>) => void;
   members: OrganizationMember[];
@@ -55,40 +337,33 @@ interface RyveContextType {
   currentUserRole: UserRole;
   setCurrentUserRole: (role: UserRole) => void;
 
-  // Networks
   networks: Network[];
   createNetwork: (data: { name: string; description: string; region: string; redundancyPolicy: string }) => Network;
   deleteNetwork: (id: string) => void;
 
-  // Nodes (Customer vs Ryve-Provided)
   nodes: NodeDevice[];
   registerCustomerNode: (networkId: string, nodeName: string, capacityTb: number, osInfo?: string) => NodeDevice;
   requestRyveStorageNode: (networkId: string, capacityTb: number, billingCycle: 'monthly' | 'annual') => Promise<void>;
   removeNode: (id: string) => void;
   toggleNodeStatus: (id: string) => void;
 
-  // Enrollment Codes
   enrollmentCodes: EnrollmentCode[];
   generateEnrollmentCode: (networkId: string, maxUses?: number) => EnrollmentCode;
 
-  // Files & Chunking
   files: FileItem[];
   uploadFile: (file: { name: string; sizeBytes: number; mimeType: string; networkId: string }) => FileItem;
   deleteFile: (id: string) => void;
   toggleFilePublic: (id: string) => void;
   getFileChunks: (file: FileItem) => FileChunk[];
 
-  // Storage Requests & Billing
   storageRequests: StorageRequest[];
   invoices: Invoice[];
 
-  // Security & Audit
   auditLogs: AuditLog[];
   apiKeys: ApiKey[];
   generateApiKey: (name: string, permissions: string[]) => { key: ApiKey; secret: string };
   revokeApiKey: (id: string) => void;
 
-  // System Stats (Derived)
   stats: {
     totalStorageBytes: number;
     usedStorageBytes: number;
@@ -104,20 +379,15 @@ interface RyveContextType {
     monthlySpendUsd: number;
   };
 
-  // Modals & UI Controls
   isAddNodeModalOpen: boolean;
   openAddNodeModal: (defaultTab?: 'customer' | 'ryve') => void;
   closeAddNodeModal: () => void;
   addNodeModalTab: 'customer' | 'ryve';
   setAddNodeModalTab: (tab: 'customer' | 'ryve') => void;
 
-  // Toast notifications
   toasts: ToastMessage[];
   addToast: (toast: Omit<ToastMessage, 'id'>) => void;
   removeToast: (id: string) => void;
-
-  // Status
-  isSupabaseActive: boolean;
 }
 
 const RyveContext = createContext<RyveContextType | undefined>(undefined);
@@ -127,59 +397,129 @@ export function RyveProvider({ children }: { children: ReactNode }) {
   const [selectedNetworkId, setSelectedNetworkId] = useState<string>('all');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('owner');
 
-  // Modals state
   const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
   const [addNodeModalTab, setAddNodeModalTab] = useState<'customer' | 'ryve'>('customer');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Core entities
-  const [organization, setOrganization] = useState<Organization>(initialOrganization);
-  const [members, setMembers] = useState<OrganizationMember[]>(initialMembers);
-  const [networks, setNetworks] = useState<Network[]>(initialNetworks);
-  const [nodes, setNodes] = useState<NodeDevice[]>(initialNodes);
-  const [files, setFiles] = useState<FileItem[]>(initialFiles);
-  const [enrollmentCodes, setEnrollmentCodes] = useState<EnrollmentCode[]>(initialEnrollmentCodes);
-  const [storageRequests, setStorageRequests] = useState<StorageRequest[]>(initialStorageRequests);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(initialApiKeys);
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [organization, setOrganization] = useState<Organization>(defaultOrganization);
+  const [members, setMembers] = useState<OrganizationMember[]>(defaultMembers);
+  const [networks, setNetworks] = useState<Network[]>(defaultNetworks);
+  const [nodes, setNodes] = useState<NodeDevice[]>(defaultNodes);
+  const [files, setFiles] = useState<FileItem[]>(defaultFiles);
+  const [enrollmentCodes, setEnrollmentCodes] = useState<EnrollmentCode[]>(defaultEnrollmentCodes);
+  const [storageRequests, setStorageRequests] = useState<StorageRequest[]>(defaultStorageRequests);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(defaultAuditLogs);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>(defaultApiKeys);
+  const [invoices, setInvoices] = useState<Invoice[]>(defaultInvoices);
 
-  // Load from localStorage if present
+  // Sync with Server Drizzle Endpoints on Mount
   useEffect(() => {
-    try {
-      const savedOrg = localStorage.getItem('ryve_org');
-      if (savedOrg) setOrganization(JSON.parse(savedOrg));
+    // 1. Fetch Networks from Drizzle ORM
+    fetch('/api/networks')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped: Network[] = json.data.map((n: any) => ({
+            id: n.id,
+            network_id_code: n.networkIdCode,
+            organization_id: n.organizationId,
+            name: n.name,
+            description: n.description || '',
+            region: n.region,
+            status: n.status,
+            redundancy_policy: n.redundancyPolicy,
+            encryption_standard: n.encryptionStandard,
+            total_storage_bytes: Number(n.totalStorageBytes) || 0,
+            used_storage_bytes: Number(n.usedStorageBytes) || 0,
+            node_count: Number(n.nodeCount) || 0,
+            created_at: n.createdAt,
+          }));
+          setNetworks(mapped);
+        }
+      })
+      .catch(() => {});
 
-      const savedNetworks = localStorage.getItem('ryve_networks');
-      if (savedNetworks) setNetworks(JSON.parse(savedNetworks));
+    // 2. Fetch Nodes from Drizzle ORM
+    fetch('/api/nodes')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped: NodeDevice[] = json.data.map((n: any) => ({
+            id: n.id,
+            node_id_code: n.nodeIdCode,
+            network_id: n.networkId,
+            organization_id: n.organizationId,
+            name: n.name,
+            node_type: n.nodeType,
+            ip_address: n.ipAddress,
+            total_storage_bytes: Number(n.totalStorageBytes) || 0,
+            used_storage_bytes: Number(n.usedStorageBytes) || 0,
+            status: n.status,
+            health_score: Number(n.healthScore) || 100,
+            latency_ms: Number(n.latencyMs) || 15,
+            last_heartbeat: n.lastHeartbeat || 'Just now',
+            version: n.version || 'v1.4.2-p2p',
+            os_info: n.osInfo || 'Linux',
+            uptime_pct: Number(n.uptimePct) || 100,
+            created_at: n.createdAt,
+          }));
+          setNodes(mapped);
+        }
+      })
+      .catch(() => {});
 
-      const savedNodes = localStorage.getItem('ryve_nodes');
-      if (savedNodes) setNodes(JSON.parse(savedNodes));
+    // 3. Fetch Files
+    fetch('/api/files')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped: FileItem[] = json.data.map((f: any) => ({
+            id: f.id,
+            organization_id: f.organizationId,
+            network_id: f.networkId,
+            network_name: f.networkName,
+            name: f.name,
+            path: f.path,
+            size_bytes: Number(f.sizeBytes) || 0,
+            mime_type: f.mimeType,
+            is_public: Boolean(f.isPublic),
+            chunks_count: f.chunksCount || 12,
+            data_chunks: f.dataChunks || 8,
+            parity_chunks: f.parityChunks || 4,
+            encryption_algorithm: f.encryptionAlgorithm,
+            uploaded_by: f.uploadedBy,
+            created_at: f.createdAt,
+            hash: f.hash,
+          }));
+          setFiles(mapped);
+        }
+      })
+      .catch(() => {});
 
-      const savedFiles = localStorage.getItem('ryve_files');
-      if (savedFiles) setFiles(JSON.parse(savedFiles));
-
-      const savedAudit = localStorage.getItem('ryve_audit');
-      if (savedAudit) setAuditLogs(JSON.parse(savedAudit));
-    } catch {
-      // Ignore parse errors
-    }
+    // 4. Fetch Audit Logs
+    fetch('/api/audit-logs')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped: AuditLog[] = json.data.map((a: any) => ({
+            id: a.id,
+            organization_id: a.organizationId,
+            user_name: a.userName,
+            user_email: a.userEmail,
+            action: a.action,
+            target_type: a.targetType,
+            target_id: a.targetId,
+            details: a.details,
+            ip_address: a.ipAddress,
+            created_at: a.createdAt,
+          }));
+          setAuditLogs(mapped);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  // Save changes to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('ryve_org', JSON.stringify(organization));
-      localStorage.setItem('ryve_networks', JSON.stringify(networks));
-      localStorage.setItem('ryve_nodes', JSON.stringify(nodes));
-      localStorage.setItem('ryve_files', JSON.stringify(files));
-      localStorage.setItem('ryve_audit', JSON.stringify(auditLogs));
-    } catch {
-      // Ignore
-    }
-  }, [organization, networks, nodes, files, auditLogs]);
-
-  // Toast Helpers
+  // Toasts
   const addToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { ...toast, id }]);
@@ -207,9 +547,16 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       created_at: 'Just now',
     };
     setAuditLogs((prev) => [newLog, ...prev]);
+
+    // Async push to Drizzle
+    fetch('/api/audit-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newLog),
+    }).catch(() => {});
   };
 
-  // Organization update
+  // Organization
   const updateOrganization = (updates: Partial<Organization>) => {
     setOrganization((prev) => ({ ...prev, ...updates }));
     logAction('ORG_SETTINGS_UPDATED', 'security', organization.id, 'Updated organization details');
@@ -238,7 +585,7 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     setMembers((prev) => prev.filter((m) => m.id !== id));
     if (mem) {
       logAction('MEMBER_REMOVED', 'security', mem.email, `Removed ${mem.name} (${mem.email})`);
-      addToast({ type: 'info', title: 'Member removed', description: `${mem.name} was removed from organization` });
+      addToast({ type: 'info', title: 'Member removed', description: `${mem.name} was removed` });
     }
   };
 
@@ -269,9 +616,23 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       used_storage_bytes: 0,
       node_count: 0,
     };
+
     setNetworks((prev) => [...prev, newNet]);
     logAction('NETWORK_CREATED', 'network', netCode, `Created network "${data.name}"`);
-    addToast({ type: 'success', title: 'Network created', description: `${data.name} (${netCode}) is ready for nodes` });
+    addToast({ type: 'success', title: 'Network created', description: `${data.name} (${netCode})` });
+
+    // Persist to Drizzle
+    fetch('/api/networks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        description: data.description,
+        region: data.region,
+        redundancyPolicy: data.redundancyPolicy,
+      }),
+    }).catch(() => {});
+
     return newNet;
   };
 
@@ -282,13 +643,16 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     setNodes((prev) => prev.filter((n) => n.network_id !== id));
     if (selectedNetworkId === id) setSelectedNetworkId('all');
     logAction('NETWORK_DELETED', 'network', net.network_id_code, `Deleted network "${net.name}"`);
-    addToast({ type: 'warning', title: 'Network deleted', description: `Network ${net.name} and nodes removed` });
+    addToast({ type: 'warning', title: 'Network deleted', description: `Network ${net.name} removed` });
+
+    // Drizzle delete
+    fetch(`/api/networks?id=${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   // Nodes
   const registerCustomerNode = (networkId: string, nodeName: string, capacityTb: number, osInfo?: string) => {
     const net = networks.find((n) => n.id === networkId);
-    const nodeCode = `NODE-${(net?.name.substring(0, 3) || 'SJC').toUpperCase()}-${Math.floor(10 + Math.random() * 90)}`;
+    const nodeCode = `NODE-${Math.floor(100 + Math.random() * 900)}`;
     const totalBytes = capacityTb * 1000000000000;
     const newNode: NodeDevice = {
       id: `node-${Date.now()}`,
@@ -301,17 +665,16 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       total_storage_bytes: totalBytes,
       used_storage_bytes: Math.floor(totalBytes * 0.15),
       status: 'healthy',
-      health_score: 98,
+      health_score: 99,
       latency_ms: Math.floor(10 + Math.random() * 20),
       last_heartbeat: 'Just now',
       version: 'v1.4.2-p2p',
-      os_info: osInfo || 'Ubuntu 24.04 LTS (x86_64)',
+      os_info: osInfo || 'Ubuntu Server 24.04 (x86_64)',
       uptime_pct: 100.0,
       created_at: new Date().toISOString(),
     };
 
     setNodes((prev) => [newNode, ...prev]);
-    // Update network capacity
     setNetworks((prev) =>
       prev.map((n) =>
         n.id === networkId
@@ -325,18 +688,32 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       )
     );
 
-    logAction('NODE_ENROLLED', 'node', nodeCode, `Self-hosted node "${nodeName}" enrolled into ${net?.name || 'network'}`);
+    logAction('NODE_ENROLLED', 'node', nodeCode, `Customer node "${nodeName}" joined ${net?.name || 'network'}`);
     addToast({
       type: 'success',
       title: 'Customer node joined',
       description: `${nodeName} (${capacityTb} TB) is online & syncing shards`,
     });
+
+    // Save via Drizzle API
+    fetch('/api/nodes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: nodeName,
+        networkId,
+        nodeType: 'customer_owned',
+        capacityTb,
+        osInfo,
+      }),
+    }).catch(() => {});
+
     return newNode;
   };
 
   const requestRyveStorageNode = async (networkId: string, capacityTb: number, billingCycle: 'monthly' | 'annual') => {
     const net = networks.find((n) => n.id === networkId);
-    const pricePerMonth = capacityTb * 4.0; // $4/TB/mo
+    const pricePerMonth = capacityTb * 4.0;
     const nodeCode = `RYV-POD-${Math.floor(100 + Math.random() * 900)}`;
     const totalBytes = capacityTb * 1000000000000;
 
@@ -354,7 +731,6 @@ export function RyveProvider({ children }: { children: ReactNode }) {
 
     setStorageRequests((prev) => [newRequest, ...prev]);
 
-    // Provision the Ryve Node immediately into the network
     const newNode: NodeDevice = {
       id: `node-${Date.now()}`,
       node_id_code: nodeCode,
@@ -377,7 +753,6 @@ export function RyveProvider({ children }: { children: ReactNode }) {
 
     setNodes((prev) => [newNode, ...prev]);
 
-    // Update network metrics
     setNetworks((prev) =>
       prev.map((n) =>
         n.id === networkId
@@ -396,6 +771,17 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       title: 'Ryve Storage Node Provisioned',
       description: `Added ${capacityTb} TB high-speed node (${nodeCode}) to ${net?.name}`,
     });
+
+    // Drizzle API
+    fetch('/api/storage-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        networkId,
+        capacityTb,
+        billingCycle,
+      }),
+    }).catch(() => {});
   };
 
   const removeNode = (id: string) => {
@@ -415,7 +801,10 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       )
     );
     logAction('NODE_REVOKED', 'node', node.node_id_code, `Revoked node "${node.name}" from network`);
-    addToast({ type: 'warning', title: 'Node revoked', description: `Node ${node.name} was removed from the cluster` });
+    addToast({ type: 'warning', title: 'Node revoked', description: `Node ${node.name} was removed` });
+
+    // Drizzle API
+    fetch(`/api/nodes?id=${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const toggleNodeStatus = (id: string) => {
@@ -423,7 +812,14 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       prev.map((n) => {
         if (n.id === id) {
           const nextStatus: NodeStatus = n.status === 'healthy' ? 'warning' : n.status === 'warning' ? 'offline' : 'healthy';
-          const nextScore = nextStatus === 'healthy' ? 99 : nextStatus === 'warning' ? 75 : 0;
+          const nextScore = nextStatus === 'healthy' ? 99 : nextStatus === 'warning' ? 70 : 0;
+          
+          fetch('/api/nodes', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status: nextStatus }),
+          }).catch(() => {});
+
           return { ...n, status: nextStatus, health_score: nextScore, last_heartbeat: nextStatus === 'offline' ? '28m ago' : 'Just now' };
         }
         return n;
@@ -447,9 +843,18 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
+
     setEnrollmentCodes((prev) => [newCode, ...prev]);
     logAction('ENROLLMENT_CODE_GENERATED', 'network', code, `Generated enrollment code for ${net?.name}`);
     addToast({ type: 'success', title: 'Enrollment code created', description: code });
+
+    // Drizzle API
+    fetch('/api/enrollment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ networkId, maxUses }),
+    }).catch(() => {});
+
     return newCode;
   };
 
@@ -469,7 +874,7 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       chunks_count: 12,
       data_chunks: 8,
       parity_chunks: 4,
-      encryption_algorithm: 'AES-256-GCM (Zero-Knowledge)',
+      encryption_algorithm: 'AES-256-GCM',
       uploaded_by: 'Alex Rivers',
       created_at: new Date().toISOString(),
       hash: `sha256-${Math.random().toString(36).substring(2, 18)}${Math.random().toString(36).substring(2, 18)}`,
@@ -482,6 +887,14 @@ export function RyveProvider({ children }: { children: ReactNode }) {
       title: 'File distributed across nodes',
       description: `${data.name} encrypted & chunked into 8 data + 4 parity pieces`,
     });
+
+    // Drizzle API
+    fetch('/api/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(() => {});
+
     return newFile;
   };
 
@@ -489,8 +902,10 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     const file = files.find((f) => f.id === id);
     if (!file) return;
     setFiles((prev) => prev.filter((f) => f.id !== id));
-    logAction('FILE_DELETED', 'file', file.name, `Shards purged across all participating nodes`);
+    logAction('FILE_DELETED', 'file', file.name, `Shards purged across participating nodes`);
     addToast({ type: 'info', title: 'File deleted', description: file.name });
+
+    fetch(`/api/files?id=${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const toggleFilePublic = (id: string) => {
@@ -500,6 +915,11 @@ export function RyveProvider({ children }: { children: ReactNode }) {
           const updated = !f.is_public;
           logAction('FILE_VISIBILITY_CHANGED', 'file', f.name, `File set to ${updated ? 'Public Link' : 'Private Mesh'}`);
           addToast({ type: 'info', title: `File is now ${updated ? 'Public' : 'Private'}` });
+          fetch('/api/files', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, isPublic: updated }),
+          }).catch(() => {});
           return { ...f, is_public: updated };
         }
         return f;
@@ -507,14 +927,12 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // File Chunk Inspector Generator
   const getFileChunks = (file: FileItem): FileChunk[] => {
     const relevantNodes = nodes.filter((n) => n.network_id === file.network_id);
-    const fallbackNodes = nodes.length > 0 ? nodes : initialNodes;
-    const pool = relevantNodes.length >= 4 ? relevantNodes : fallbackNodes;
+    const pool = relevantNodes.length >= 4 ? relevantNodes : nodes;
 
     const chunks: FileChunk[] = [];
-    const totalChunks = 12; // Reed-Solomon 8 + 4
+    const totalChunks = 12;
     const chunkSize = Math.ceil(file.size_bytes / 8);
 
     for (let i = 0; i < totalChunks; i++) {
@@ -552,7 +970,7 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     };
     setApiKeys((prev) => [newKey, ...prev]);
     logAction('API_KEY_GENERATED', 'security', prefix, `Generated key "${name}"`);
-    addToast({ type: 'success', title: 'API Key generated', description: `Keep secret safe: ${prefix}...` });
+    addToast({ type: 'success', title: 'API Key generated', description: `Prefix: ${prefix}...` });
     return { key: newKey, secret };
   };
 
@@ -574,7 +992,7 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     setIsAddNodeModalOpen(false);
   };
 
-  // Derived Statistics (Filtered by selectedNetworkId)
+  // Derived Statistics
   const stats = useMemo(() => {
     const filteredNodes = selectedNetworkId === 'all' 
       ? nodes 
@@ -609,10 +1027,7 @@ export function RyveProvider({ children }: { children: ReactNode }) {
     const usedStorageBytes = customerUsedBytes + ryveUsedBytes;
     const availableStorageBytes = Math.max(0, totalStorageBytes - usedStorageBytes);
     const healthScore = filteredNodes.length > 0 ? Math.round(totalHealthScore / filteredNodes.length) : 100;
-
-    // Monthly spend on Ryve provided nodes ($4/TB)
-    const ryveTb = ryveProvidedBytes / 1000000000000;
-    const monthlySpendUsd = Math.round(ryveTb * 4.0);
+    const monthlySpendUsd = Math.round((ryveProvidedBytes / 1000000000000) * 4.0);
 
     return {
       totalStorageBytes,
@@ -675,7 +1090,6 @@ export function RyveProvider({ children }: { children: ReactNode }) {
         toasts,
         addToast,
         removeToast,
-        isSupabaseActive: isSupabaseConfigured,
       }}
     >
       {children}

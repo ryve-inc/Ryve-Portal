@@ -1,5 +1,32 @@
 import { NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase';
+import { db, schema } from '@/lib/db';
+import { desc, eq } from 'drizzle-orm';
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const networkId = searchParams.get('networkId');
+
+    if (networkId && networkId !== 'all') {
+      const codes = await db
+        .select()
+        .from(schema.enrollmentCodes)
+        .where(eq(schema.enrollmentCodes.networkId, networkId))
+        .orderBy(desc(schema.enrollmentCodes.createdAt));
+      return NextResponse.json({ success: true, data: codes });
+    }
+
+    const allCodes = await db
+      .select()
+      .from(schema.enrollmentCodes)
+      .orderBy(desc(schema.enrollmentCodes.createdAt));
+
+    return NextResponse.json({ success: true, data: allCodes });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -7,39 +34,22 @@ export async function POST(request: Request) {
     const { networkId, maxUses } = body;
 
     const code = `RYV-ENR-${Math.floor(1000 + Math.random() * 9000)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
-    const supabase = getServiceSupabase();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    if (supabase) {
-      const { data, error } = await supabase.from('enrollment_codes').insert([
-        {
-          network_id: networkId,
-          code,
-          created_by: 'Alex Rivers',
-          max_uses: maxUses || 10,
-          current_uses: 0,
-          is_active: true,
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        }
-      ]).select().single();
-
-      if (!error && data) {
-        return NextResponse.json({ success: true, data });
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: `enr-${Date.now()}`,
-        network_id: networkId,
+    const [newCode] = await db
+      .insert(schema.enrollmentCodes)
+      .values({
+        networkId,
         code,
-        max_uses: maxUses || 10,
-        current_uses: 0,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      }
-    });
+        createdBy: 'Alex Rivers',
+        maxUses: maxUses || 10,
+        currentUses: 0,
+        isActive: true,
+        expiresAt,
+      })
+      .returning();
+
+    return NextResponse.json({ success: true, data: newCode });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ success: false, error: message }, { status: 500 });
