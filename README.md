@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ryve Portal — Distributed Storage Control Plane
 
-## Getting Started
+The **Ryve Portal acts as the central control panel for the Ryve distributed ecosystem**, while actual file storage and P2P operations take place across self-hosted customer devices and Ryve-provided datacenter storage nodes.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Architecture Overview
+
+```text
+                           RYVE PORTAL
+                               │
+                         Authentication
+                               │
+                     ┌─────────┴─────────┐
+                     │   Ryve Control    │
+                     │      Plane        │
+                     └─────────┬─────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+          Organizations     Networks          Nodes
+              │                │                │
+          Users/Roles      Network ID       Node ID
+                                               │
+                                     ┌─────────┴─────────┐
+                                     │                   │
+                              Customer Devices     Ryve Nodes
+                              (Free storage)       (Paid storage)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Control Plane**: Identity, Organization management, Networks, Node Registry, Billing, Monitoring, and Audit logs.
+- **P2P Data Plane**: AES-256-GCM client-side encryption, Reed-Solomon 8+4 erasure sharding, and direct peer distribution.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features Implemented
 
-## Learn More
+1. **Landing Page**: Complete technical marketing homepage with architecture overview, interactive storage pricing estimator ($4/TB/mo vs AWS S3), features breakdown, and instant portal launcher.
+2. **5-Second Health Assessment Dashboard**: Instant system comprehension: total logical storage, utilized vs available space, active/warning/offline nodes, and clean horizontal allocation bars.
+3. **Networks Management**: Isolated storage networks, Network IDs (e.g. `RYV-NET-8492`), redundancy policy selection, and connected node counts.
+4. **Hardware & Node Registry**:
+   - **Customer-Owned Nodes (Free)**: Enrollment code generator with copyable CLI command (`curl -sSL https://ryve.io/install.sh | bash && ryve-daemon join --enroll ...`) and simulated device joining.
+   - **Ryve-Provided Nodes (Paid)**: Provisioning flow with capacity presets (1 TB to 25 TB) at $4/TB/month, SLA guarantees, and instant allocation.
+5. **Storage Distribution**: Strict visual separation between Customer-Owned Storage and Ryve-Provided Storage, with Reed-Solomon (8+4) health status.
+6. **Encrypted File Mesh & Distributed Chunking Inspector**:
+   - File upload, download, delete, and public/private access toggles.
+   - Interactive modal showing all 12 Reed-Solomon shards (8 data + 4 parity) mapped to peer nodes with hash verification.
+7. **Monitoring & Telemetry**: Live peer health matrix, heartbeat sweeping, mean latency metrics, and simulated node failure / auto-healing testing.
+8. **Billing & Invoices**: Real-time monthly usage metering ($4/TB/mo for Ryve nodes, $0 for customer nodes), invoices list with downloadable/printable invoice viewer.
+9. **Security & Audit Logs**: API key generator with secret reveal, 2FA enforcement toggle, and comprehensive immutable audit log table with search and filtering.
+10. **Organization & Roles**: Member directory with role management (`Owner`, `Admin`, `Member`, `Viewer`) and quick perspective switcher.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database Setup (Supabase)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project is built to work seamlessly with **Supabase** while maintaining an instant out-of-the-box local reactive store if credentials are not yet configured.
 
-## Deploy on Vercel
+### 1. Apply Database Schema
+Copy the SQL script located in:
+```text
+supabase/schema.sql
+```
+and execute it in the **Supabase Dashboard -> SQL Editor**. This creates all tables (`organizations`, `networks`, `nodes`, `enrollment_codes`, `storage_requests`, `files`, `audit_logs`, `api_keys`, `invoices`), indexes, RLS policies, and seed data.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
+Fill in your Supabase project credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Running the Application
+
+```bash
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+
+# Or build for production
+npm run build
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
