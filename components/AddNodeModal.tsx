@@ -28,7 +28,8 @@ export function AddNodeModal() {
     selectedNetworkId,
     registerCustomerNode,
     requestRyveStorageNode,
-    addToast
+    addToast,
+    setCurrentView
   } = useRyve();
 
   // Tab 1 state: Customer Node
@@ -117,31 +118,50 @@ export function AddNodeModal() {
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex border-b border-zinc-200 bg-zinc-100/50 px-6 pt-2">
-          <button
-            onClick={() => setAddNodeModalTab('customer')}
-            className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-medium border-b-2 transition-all cursor-pointer ${
-              addNodeModalTab === 'customer'
-                ? 'border-emerald-600 text-emerald-800 font-semibold'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            <Server className="w-3.5 h-3.5" />
-            <span>Customer-Owned Node (Free)</span>
-          </button>
-          <button
-            onClick={() => setAddNodeModalTab('ryve')}
-            className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-medium border-b-2 transition-all cursor-pointer ${
-              addNodeModalTab === 'ryve'
-                ? 'border-emerald-600 text-emerald-800 font-semibold'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            <HardDrive className="w-3.5 h-3.5" />
-            <span>Ryve-Provided Storage (Managed)</span>
-          </button>
-        </div>
+        {networks.length === 0 ? (
+          <div className="p-8 text-center flex flex-col items-center justify-center gap-2">
+            <Layers className="w-8 h-8 text-zinc-300" />
+            <p className="text-sm font-semibold text-zinc-900">No Storage Networks Found</p>
+            <p className="text-xs text-zinc-500 max-w-sm">
+              Before enrolling hardware or requesting storage, create at least one network to define your redundancy and cluster scope.
+            </p>
+            <button
+              onClick={() => {
+                closeAddNodeModal();
+                setCurrentView('networks');
+              }}
+              className="mt-3 px-3.5 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-md text-xs font-medium cursor-pointer"
+            >
+              Go to Networks
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Tab Switcher */}
+            <div className="flex border-b border-zinc-200 bg-zinc-100/50 px-6 pt-2">
+              <button
+                onClick={() => setAddNodeModalTab('customer')}
+                className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-medium border-b-2 transition-all cursor-pointer ${
+                  addNodeModalTab === 'customer'
+                    ? 'border-emerald-600 text-emerald-800 font-semibold'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                <Server className="w-3.5 h-3.5" />
+                <span>Customer-Owned Node (Free)</span>
+              </button>
+              <button
+                onClick={() => setAddNodeModalTab('ryve')}
+                className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-medium border-b-2 transition-all cursor-pointer ${
+                  addNodeModalTab === 'ryve'
+                    ? 'border-emerald-600 text-emerald-800 font-semibold'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                <HardDrive className="w-3.5 h-3.5" />
+                <span>Ryve-Provided Storage (Managed)</span>
+              </button>
+            </div>
 
         {/* Tab 1: Customer-Owned Node Flow */}
         {addNodeModalTab === 'customer' && (
@@ -390,7 +410,9 @@ export function AddNodeModal() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
 import { eq, sql } from 'drizzle-orm';
 import { config } from '@/lib/config';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
         uptimePct: '100.00',
         version: 'v1.4.2-p2p',
         osInfo: 'Ryve Managed NVMe Datacenter Pod',
-        lastHeartbeat: 'Just now',
+        lastHeartbeat: new Date().toISOString(),
       })
       .returning();
 
@@ -69,17 +70,17 @@ export async function POST(request: Request) {
       })
       .where(eq(schema.networks.id, networkId));
 
-    // 4. Audit Log
+    // 4. Audit Log with real session identity
+    const user = await getCurrentUser(request.headers);
     await db.insert(schema.auditLogs).values({
       organizationId: orgId,
-      userName: 'Alex Rivers',
-      userEmail: 'alex@acme.corp',
+      userName: user?.name || body.userName || 'Operator',
+      userEmail: user?.email || body.userEmail || 'operator@ryve.local',
       action: 'STORAGE_PROVISIONED',
       targetType: 'storage_request',
       targetId: nodeCode,
       details: `Provisioned ${capacity} TB dedicated NVMe pod (${nodeCode}) into ${netName}`,
-      ipAddress: '127.0.0.1',
-      createdAt: 'Just now',
+      ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
     });
 
     return NextResponse.json({

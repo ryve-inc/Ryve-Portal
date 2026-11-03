@@ -125,7 +125,7 @@ export const nodes = pgTable('nodes', {
   uptimePct: numeric('uptime_pct').notNull().default('99.95'),
   version: text('version').notNull().default('v1.4.2-p2p'),
   osInfo: text('os_info').notNull().default('Ubuntu Server 24.04 (x86_64)'),
-  lastHeartbeat: text('last_heartbeat').notNull().default('Just now'),
+  lastHeartbeat: text('last_heartbeat'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -136,7 +136,7 @@ export const enrollmentCodes = pgTable('enrollment_codes', {
     .notNull()
     .references(() => networks.id, { onDelete: 'cascade' }),
   code: text('code').notNull().unique(), // e.g. RYV-ENR-9821-XA7
-  createdBy: text('created_by').notNull().default('Alex Rivers'),
+  createdBy: text('created_by').notNull().default('system'),
   maxUses: integer('max_uses').notNull().default(10),
   currentUses: integer('current_uses').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
@@ -182,7 +182,7 @@ export const files = pgTable('files', {
   parityChunks: integer('parity_chunks').notNull().default(4),
   encryptionAlgorithm: text('encryption_algorithm').notNull().default('AES-256-GCM'),
   hash: text('hash').notNull(),
-  uploadedBy: text('uploaded_by').notNull().default('Alex Rivers'),
+  uploadedBy: text('uploaded_by').notNull().default('system'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -192,14 +192,14 @@ export const auditLogs = pgTable('audit_logs', {
   organizationId: uuid('organization_id')
     .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
-  userName: text('user_name').notNull(),
-  userEmail: text('user_email').notNull(),
+  userName: text('user_name').notNull().default('System'),
+  userEmail: text('user_email').notNull().default('system@ryve.local'),
   action: text('action').notNull(),
   targetType: text('target_type').notNull(),
   targetId: text('target_id').notNull(),
   details: text('details').notNull(),
   ipAddress: text('ip_address').notNull().default('127.0.0.1'),
-  createdAt: text('created_at').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // API Keys

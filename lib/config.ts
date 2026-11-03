@@ -25,8 +25,8 @@ export const config = {
 
   // Tenant Defaults
   defaultOrgId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  defaultOrgName: 'SJCET Distributed Labs',
-  defaultOrgSlug: 'sjcet-labs',
+  defaultOrgName: 'Ryve Organization',
+  defaultOrgSlug: 'ryve-org',
 
   // Storage Pricing (Per TB / Month in USD)
   ryveStoragePricePerTb: 4.0,

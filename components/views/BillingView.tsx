@@ -162,45 +162,53 @@ export function BillingView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {invoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-zinc-50/70 transition-colors">
-                  <td className="py-3 px-4 font-mono font-semibold text-zinc-900">
-                    {inv.invoice_number}
-                  </td>
-                  <td className="py-3 px-4 text-zinc-600 font-mono text-[11px]">
-                    {inv.period_start} → {inv.period_end}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-zinc-700">
-                    {inv.storage_tb_billed} TB Managed
-                  </td>
-                  <td className="py-3 px-4 font-mono font-bold text-zinc-950">
-                    ${inv.amount_usd.toFixed(2)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                      Paid
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setSelectedInvoice(inv)}
-                        className="px-2 py-1 text-zinc-600 hover:text-zinc-900 rounded hover:bg-zinc-100 text-xs font-medium cursor-pointer"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleDownloadInvoice(inv)}
-                        className="p-1 text-zinc-500 hover:text-zinc-900 rounded hover:bg-zinc-100 cursor-pointer"
-                        title="Download PDF"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+              {invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-zinc-400">
+                    No past invoices. Invoices generate automatically on your monthly billing cycle.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                invoices.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-zinc-50/70 transition-colors">
+                    <td className="py-3 px-4 font-mono font-semibold text-zinc-900">
+                      {inv.invoice_number}
+                    </td>
+                    <td className="py-3 px-4 text-zinc-600 font-mono text-[11px]">
+                      {inv.period_start} → {inv.period_end}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-zinc-700">
+                      {inv.storage_tb_billed} TB Managed
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold text-zinc-950">
+                      ${inv.amount_usd.toFixed(2)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                        Paid
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setSelectedInvoice(inv)}
+                          className="px-2 py-1 text-zinc-600 hover:text-zinc-900 rounded hover:bg-zinc-100 text-xs font-medium cursor-pointer"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDownloadInvoice(inv)}
+                          className="p-1 text-zinc-500 hover:text-zinc-900 rounded hover:bg-zinc-100 cursor-pointer"
+                          title="Download PDF"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

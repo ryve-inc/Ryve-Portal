@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
-import { ensureDatabaseSeeded } from '@/lib/db/seed';
 import { eq, desc } from 'drizzle-orm';
 import { config } from '@/lib/config';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
-    await ensureDatabaseSeeded();
     const networksList = await db
       .select()
       .from(schema.networks)
@@ -44,17 +43,17 @@ export async function POST(request: Request) {
       })
       .returning();
 
-    // Log action to audit table
+    // Log action to audit table with real session identity
+    const user = await getCurrentUser(request.headers);
     await db.insert(schema.auditLogs).values({
       organizationId: orgId,
-      userName: 'Alex Rivers',
-      userEmail: 'alex@acme.corp',
+      userName: user?.name || body.userName || 'Operator',
+      userEmail: user?.email || body.userEmail || 'operator@ryve.local',
       action: 'NETWORK_CREATED',
       targetType: 'network',
       targetId: netCode,
       details: `Created network "${name}" in ${region || 'us-east-1'}`,
-      ipAddress: '127.0.0.1',
-      createdAt: 'Just now',
+      ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
     });
 
     return NextResponse.json({ success: true, data: newNetwork });

@@ -28,21 +28,21 @@ CREATE TABLE "api_keys" (
 CREATE TABLE "audit_logs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"user_name" text NOT NULL,
-	"user_email" text NOT NULL,
+	"user_name" text DEFAULT 'System' NOT NULL,
+	"user_email" text DEFAULT 'system@ryve.local' NOT NULL,
 	"action" text NOT NULL,
 	"target_type" text NOT NULL,
 	"target_id" text NOT NULL,
 	"details" text NOT NULL,
 	"ip_address" text DEFAULT '127.0.0.1' NOT NULL,
-	"created_at" text NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "enrollment_codes" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"network_id" uuid NOT NULL,
 	"code" text NOT NULL,
-	"created_by" text DEFAULT 'Alex Rivers' NOT NULL,
+	"created_by" text DEFAULT 'system' NOT NULL,
 	"max_uses" integer DEFAULT 10 NOT NULL,
 	"current_uses" integer DEFAULT 0 NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE "files" (
 	"parity_chunks" integer DEFAULT 4 NOT NULL,
 	"encryption_algorithm" text DEFAULT 'AES-256-GCM' NOT NULL,
 	"hash" text NOT NULL,
-	"uploaded_by" text DEFAULT 'Alex Rivers' NOT NULL,
+	"uploaded_by" text DEFAULT 'system' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -118,7 +118,7 @@ CREATE TABLE "nodes" (
 	"uptime_pct" numeric DEFAULT '99.95' NOT NULL,
 	"version" text DEFAULT 'v1.4.2-p2p' NOT NULL,
 	"os_info" text DEFAULT 'Ubuntu Server 24.04 (x86_64)' NOT NULL,
-	"last_heartbeat" text DEFAULT 'Just now' NOT NULL,
+	"last_heartbeat" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "nodes_node_id_code_unique" UNIQUE("node_id_code")
 );

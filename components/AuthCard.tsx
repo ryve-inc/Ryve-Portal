@@ -34,8 +34,8 @@ export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [orgName, setOrgName] = useState('SJCET Distributed Labs');
-  const [orgType, setOrgType] = useState('academic');
+  const [orgName, setOrgName] = useState('');
+  const [orgType, setOrgType] = useState('enterprise');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -43,19 +43,6 @@ export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Quick Demo Credentials Fill
-  const fillDemoCredentials = () => {
-    setEmail('alex@acme.corp');
-    setPassword('RyveDemo@2026!');
-    setName('Alex Rivers');
-    setErrorMessage(null);
-    addToast({
-      type: 'info',
-      title: 'Demo credentials filled',
-      description: 'alex@acme.corp / RyveDemo@2026!',
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,7 +237,7 @@ export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. SJCET Labs"
+                    placeholder="e.g. Acme Storage Corp"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 border border-zinc-200 rounded-md bg-zinc-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-950 text-xs text-zinc-900"
@@ -293,18 +280,7 @@ export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
 
         {/* Password Field */}
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <label className="font-semibold text-zinc-800">Password</label>
-            {mode === 'login' && (
-              <button
-                type="button"
-                onClick={fillDemoCredentials}
-                className="text-[10px] text-emerald-700 hover:text-emerald-800 font-medium cursor-pointer"
-              >
-                Use Demo Login
-              </button>
-            )}
-          </div>
+          <label className="font-semibold text-zinc-800">Password</label>
           <div className="relative">
             <Lock className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-3" />
             <input
@@ -356,18 +332,6 @@ export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
             </>
           )}
         </button>
-
-        {/* Demo Fast Fill Button in Login Mode */}
-        {mode === 'login' && (
-          <button
-            type="button"
-            onClick={fillDemoCredentials}
-            className="w-full py-2 px-3 border border-dashed border-zinc-300 hover:border-zinc-400 bg-zinc-50 hover:bg-zinc-100 rounded-lg text-[11px] text-zinc-700 font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Fill Demo Credentials (alex@acme.corp)</span>
-          </button>
-        )}
 
         {/* OAuth Social Divider */}
         <div className="relative my-2 text-center">

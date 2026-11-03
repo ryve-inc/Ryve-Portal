@@ -38,10 +38,12 @@ export function OrganizationView() {
 
   const canManageMembers = currentUserRole === 'owner' || currentUserRole === 'admin';
 
+  const orgCode = organization.id.startsWith('org-') ? 'RYV-ORG-98241' : organization.id;
+
   const handleCopyOrg = () => {
-    copyToClipboard('RYV-ORG-98241');
+    copyToClipboard(orgCode);
     setCopiedOrgId(true);
-    addToast({ type: 'success', title: 'Organization ID copied', description: 'RYV-ORG-98241' });
+    addToast({ type: 'success', title: 'Organization ID copied', description: orgCode });
     setTimeout(() => setCopiedOrgId(false), 2000);
   };
 
@@ -100,7 +102,7 @@ export function OrganizationView() {
             onClick={handleCopyOrg}
             className="flex items-center gap-2 font-mono text-xs font-semibold text-zinc-800 hover:text-emerald-700 cursor-pointer group"
           >
-            <span>RYV-ORG-98241</span>
+            <span>{orgCode}</span>
             {copiedOrgId ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 text-zinc-400" />}
           </div>
           <span className="text-[11px] text-zinc-500">Root identifier for all sub-networks</span>
@@ -142,66 +144,74 @@ export function OrganizationView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {members.map((member) => (
-                <tr key={member.id} className="hover:bg-zinc-50/70 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-zinc-800 text-white font-bold text-[10px] flex items-center justify-center">
-                        {member.name.substring(0, 2).toUpperCase()}
-                      </div>
-                      <span className="font-semibold text-zinc-900">{member.name}</span>
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 font-mono text-zinc-600">{member.email}</td>
-
-                  <td className="py-3 px-4">
-                    {canManageMembers ? (
-                      <select
-                        value={member.role}
-                        onChange={(e) => updateMemberRole(member.id, e.target.value as UserRole)}
-                        className="px-2 py-1 rounded text-xs border border-zinc-200 bg-white font-medium capitalize text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                      >
-                        <option value="owner">Owner</option>
-                        <option value="admin">Admin</option>
-                        <option value="member">Member</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-800 capitalize">
-                        {member.role}
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="py-3 px-4">
-                    {member.mfa_enabled ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        Enforced
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono text-zinc-400">Disabled</span>
-                    )}
-                  </td>
-
-                  <td className="py-3 px-4 font-mono text-zinc-500">
-                    {new Date(member.joined_at).toLocaleDateString()}
-                  </td>
-
-                  <td className="py-3 px-4 text-right">
-                    {canManageMembers && member.role !== 'owner' && (
-                      <button
-                        onClick={() => removeMember(member.id)}
-                        className="p-1 text-zinc-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Remove member"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+              {members.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-zinc-400">
+                    No additional organization members. Click Invite Member to add team members.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                members.map((member) => (
+                  <tr key={member.id} className="hover:bg-zinc-50/70 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-6 h-6 rounded-full bg-zinc-800 text-white font-bold text-[10px] flex items-center justify-center">
+                          {member.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span className="font-semibold text-zinc-900">{member.name}</span>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4 font-mono text-zinc-600">{member.email}</td>
+
+                    <td className="py-3 px-4">
+                      {canManageMembers ? (
+                        <select
+                          value={member.role}
+                          onChange={(e) => updateMemberRole(member.id, e.target.value as UserRole)}
+                          className="px-2 py-1 rounded text-xs border border-zinc-200 bg-white font-medium capitalize text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                        >
+                          <option value="owner">Owner</option>
+                          <option value="admin">Admin</option>
+                          <option value="member">Member</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-800 capitalize">
+                          {member.role}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4">
+                      {member.mfa_enabled ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          Enforced
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-mono text-zinc-400">Disabled</span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4 font-mono text-zinc-500">
+                      {new Date(member.joined_at).toLocaleDateString()}
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      {canManageMembers && member.role !== 'owner' && (
+                        <button
+                          onClick={() => removeMember(member.id)}
+                          className="p-1 text-zinc-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Remove member"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

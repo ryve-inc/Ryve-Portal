@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
 import { desc } from 'drizzle-orm';
 import { config } from '@/lib/config';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -23,18 +24,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { action, targetType, targetId, details, organizationId, userName, userEmail } = body;
 
+    const user = await getCurrentUser(request.headers);
     const [newLog] = await db
       .insert(schema.auditLogs)
       .values({
         organizationId: organizationId || config.defaultOrgId,
-        userName: userName || 'Alex Rivers',
-        userEmail: userEmail || 'alex@acme.corp',
+        userName: userName || user?.name || 'Operator',
+        userEmail: userEmail || user?.email || 'operator@ryve.local',
         action,
         targetType: targetType || 'system',
         targetId: targetId || 'global',
         details: details || '',
-        ipAddress: '127.0.0.1',
-        createdAt: 'Just now',
+        ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
       })
       .returning();
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -36,12 +37,13 @@ export async function POST(request: Request) {
     const code = `RYV-ENR-${Math.floor(1000 + Math.random() * 9000)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+    const user = await getCurrentUser(request.headers);
     const [newCode] = await db
       .insert(schema.enrollmentCodes)
       .values({
         networkId,
         code,
-        createdBy: 'Alex Rivers',
+        createdBy: user?.name || body.createdBy || 'Operator',
         maxUses: maxUses || 10,
         currentUses: 0,
         isActive: true,

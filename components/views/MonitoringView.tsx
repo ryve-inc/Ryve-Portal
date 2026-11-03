@@ -118,18 +118,23 @@ export function MonitoringView() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-          {nodes.map((node) => (
-            <div
-              key={node.id}
-              onClick={() => toggleNodeStatus(node.id)}
-              className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
-                node.status === 'healthy'
-                  ? 'border-zinc-200 hover:border-emerald-300 bg-white'
-                  : node.status === 'warning'
-                  ? 'border-amber-300 bg-amber-50/40'
-                  : 'border-rose-300 bg-rose-50/40'
-              }`}
-            >
+          {nodes.length === 0 ? (
+            <div className="col-span-full py-8 text-center text-zinc-400 text-xs">
+              No nodes currently connected to stream telemetry. Connect a hardware node or request a Ryve pod.
+            </div>
+          ) : (
+            nodes.map((node) => (
+              <div
+                key={node.id}
+                onClick={() => toggleNodeStatus(node.id)}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                  node.status === 'healthy'
+                    ? 'border-zinc-200 hover:border-emerald-300 bg-white'
+                    : node.status === 'warning'
+                    ? 'border-amber-300 bg-amber-50/40'
+                    : 'border-rose-300 bg-rose-50/40'
+                }`}
+              >
               <div className="flex items-start justify-between">
                 <div>
                   <span className="font-semibold text-xs text-zinc-900 block truncate max-w-[180px]">
@@ -164,7 +169,8 @@ export function MonitoringView() {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        )}
         </div>
       </div>
 

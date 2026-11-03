@@ -40,3 +40,14 @@ export const auth = betterAuth({
   },
 });
 
+export async function getCurrentUser(reqHeaders?: Headers) {
+  try {
+    const session = await auth.api.getSession({
+      headers: reqHeaders || new Headers(),
+    });
+    return session?.user || null;
+  } catch {
+    return null;
+  }
+}
+

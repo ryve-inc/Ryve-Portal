@@ -251,55 +251,71 @@ export function DashboardView() {
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {networks.map((net) => {
-              const netNodes = nodes.filter((n) => n.network_id === net.id);
-              const healthyCount = netNodes.filter((n) => n.status === 'healthy').length;
-
-              return (
-                <div
-                  key={net.id}
-                  onClick={() => {
-                    setSelectedNetworkId(net.id);
-                    setCurrentView('nodes');
-                  }}
-                  className="p-4 bg-white border border-zinc-200/80 hover:border-zinc-300 rounded-xl shadow-xs transition-all cursor-pointer flex flex-col gap-3 group"
+            {networks.length === 0 ? (
+              <div className="p-8 bg-white border border-zinc-200/80 rounded-xl text-center flex flex-col items-center justify-center">
+                <Layers className="w-8 h-8 text-zinc-300 mb-2" />
+                <p className="text-sm font-semibold text-zinc-900">No storage networks created yet</p>
+                <p className="text-xs text-zinc-500 mt-0.5 max-w-sm">
+                  Create your first network to connect self-hosted nodes and provision Ryve storage.
+                </p>
+                <button
+                  onClick={() => setCurrentView('networks')}
+                  className="mt-3 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-md text-xs font-medium cursor-pointer"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-zinc-900 group-hover:text-emerald-700 transition-colors">
-                          {net.name}
-                        </span>
-                        <span className="text-[10px] font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded">
-                          {net.network_id_code}
-                        </span>
+                  Create Network
+                </button>
+              </div>
+            ) : (
+              networks.map((net) => {
+                const netNodes = nodes.filter((n) => n.network_id === net.id);
+                const healthyCount = netNodes.filter((n) => n.status === 'healthy').length;
+
+                return (
+                  <div
+                    key={net.id}
+                    onClick={() => {
+                      setSelectedNetworkId(net.id);
+                      setCurrentView('nodes');
+                    }}
+                    className="p-4 bg-white border border-zinc-200/80 hover:border-zinc-300 rounded-xl shadow-xs transition-all cursor-pointer flex flex-col gap-3 group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-zinc-900 group-hover:text-emerald-700 transition-colors">
+                            {net.name}
+                          </span>
+                          <span className="text-[10px] font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded">
+                            {net.network_id_code}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{net.description}</p>
                       </div>
-                      <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{net.description}</p>
+
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Healthy
+                      </span>
                     </div>
 
-                    <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Healthy
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-zinc-100">
-                    <div>
-                      <span className="text-[10px] text-zinc-400 block">Nodes</span>
-                      <span className="font-mono font-medium text-zinc-800">{netNodes.length} devices</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-400 block">Logical Capacity</span>
-                      <span className="font-mono font-medium text-zinc-800">{formatBytes(net.total_storage_bytes)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-400 block">Redundancy</span>
-                      <span className="font-mono text-zinc-600 text-[11px]">{net.redundancy_policy}</span>
+                    <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-zinc-100">
+                      <div>
+                        <span className="text-[10px] text-zinc-400 block">Nodes</span>
+                        <span className="font-mono font-medium text-zinc-800">{netNodes.length} devices</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 block">Logical Capacity</span>
+                        <span className="font-mono font-medium text-zinc-800">{formatBytes(net.total_storage_bytes)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 block">Redundancy</span>
+                        <span className="font-mono text-zinc-600 text-[11px]">{net.redundancy_policy}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -316,17 +332,23 @@ export function DashboardView() {
           </div>
 
           <div className="p-4 bg-white border border-zinc-200/80 rounded-xl shadow-xs flex flex-col divide-y divide-zinc-100">
-            {auditLogs.slice(0, 5).map((log) => (
-              <div key={log.id} className="py-2.5 first:pt-0 last:pb-0 flex flex-col gap-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-zinc-500 uppercase font-semibold">
-                    {log.action.replace(/_/g, ' ')}
-                  </span>
-                  <span className="text-[10px] text-zinc-400">{log.created_at}</span>
-                </div>
-                <p className="text-zinc-700 leading-snug">{log.details}</p>
+            {auditLogs.length === 0 ? (
+              <div className="py-8 text-center text-xs text-zinc-400">
+                No system activity recorded yet.
               </div>
-            ))}
+            ) : (
+              auditLogs.slice(0, 5).map((log) => (
+                <div key={log.id} className="py-2.5 first:pt-0 last:pb-0 flex flex-col gap-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase font-semibold">
+                      {log.action.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-[10px] text-zinc-400">{log.created_at}</span>
+                  </div>
+                  <p className="text-zinc-700 leading-snug">{log.details}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

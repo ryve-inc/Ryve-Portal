@@ -47,8 +47,8 @@ export function Navbar() {
 
   const selectedNet = networks.find((n) => n.id === selectedNetworkId);
 
-  const userName = session?.user?.name || 'Alex Rivers';
-  const userEmail = session?.user?.email || 'alex@acme.corp';
+  const userName = session?.user?.name || 'Administrator';
+  const userEmail = session?.user?.email || 'admin@ryve.network';
   const userInitials = userName
     .split(' ')
     .map((n) => n[0])
@@ -56,11 +56,13 @@ export function Navbar() {
     .substring(0, 2)
     .toUpperCase();
 
+  const orgIdDisplay = organization.id.startsWith('org-') ? 'RYV-ORG-98241' : organization.id;
+
   const handleCopyOrgId = (e: React.MouseEvent) => {
     e.stopPropagation();
-    copyToClipboard('RYV-ORG-98241');
+    copyToClipboard(orgIdDisplay);
     setCopiedOrgId(true);
-    addToast({ type: 'success', title: 'Organization ID copied', description: 'RYV-ORG-98241' });
+    addToast({ type: 'success', title: 'Organization ID copied', description: orgIdDisplay });
     setTimeout(() => setCopiedOrgId(false), 2000);
   };
 
@@ -93,7 +95,7 @@ export function Navbar() {
             </span>
             <div className="flex items-center gap-1.5 cursor-pointer group" onClick={handleCopyOrgId}>
               <span className="text-[10px] font-mono text-zinc-500 group-hover:text-zinc-900 transition-colors">
-                RYV-ORG-98241
+                {organization.id.startsWith('org-') ? 'RYV-ORG-98241' : organization.id}
               </span>
               {copiedOrgId ? (
                 <Check className="w-2.5 h-2.5 text-emerald-600" />

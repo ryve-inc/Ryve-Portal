@@ -1,5 +1,5 @@
 {
-  "id": "e2f22e2e-05f4-4e9a-92fa-fd66fb92f30c",
+  "id": "84b10c6b-de0f-448f-a4e3-15b5c17273b4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -210,13 +210,15 @@
           "name": "user_name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'System'"
         },
         "user_email": {
           "name": "user_email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'system@ryve.local'"
         },
         "action": {
           "name": "action",
@@ -251,9 +253,10 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -306,7 +309,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Alex Rivers'"
+          "default": "'system'"
         },
         "max_uses": {
           "name": "max_uses",
@@ -475,7 +478,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Alex Rivers'"
+          "default": "'system'"
         },
         "created_at": {
           "name": "created_at",
@@ -855,8 +858,7 @@
           "name": "last_heartbeat",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'Just now'"
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

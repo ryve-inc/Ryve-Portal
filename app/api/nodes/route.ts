@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
-import { ensureDatabaseSeeded } from '@/lib/db/seed';
 import { eq, desc, sql } from 'drizzle-orm';
 import { config } from '@/lib/config';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    await ensureDatabaseSeeded();
     const { searchParams } = new URL(request.url);
     const networkId = searchParams.get('networkId');
 
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
         uptimePct: '100.00',
         version: 'v1.4.2-p2p',
         osInfo: osInfo || 'Ubuntu Server 24.04 (x86_64)',
-        lastHeartbeat: 'Just now',
+        lastHeartbeat: new Date().toISOString(),
       })
       .returning();
 
@@ -70,17 +69,17 @@ export async function POST(request: Request) {
       })
       .where(eq(schema.networks.id, networkId));
 
-    // Audit log
+    // Audit log with real session identity
+    const user = await getCurrentUser(request.headers);
     await db.insert(schema.auditLogs).values({
       organizationId: orgId,
-      userName: 'Alex Rivers',
-      userEmail: 'alex@acme.corp',
+      userName: user?.name || body.userName || 'Operator',
+      userEmail: user?.email || body.userEmail || 'operator@ryve.local',
       action: nodeType === 'ryve_provided' ? 'STORAGE_PROVISIONED' : 'NODE_ENROLLED',
       targetType: 'node',
       targetId: nodeCode,
       details: `${nodeType === 'ryve_provided' ? 'Provisioned dedicated Ryve pod' : 'Enrolled hardware node'} "${name}" (${capacityTb} TB)`,
-      ipAddress: '127.0.0.1',
-      createdAt: 'Just now',
+      ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
     });
 
     return NextResponse.json({ success: true, data: newNode });
@@ -132,7 +131,7 @@ export async function PATCH(request: Request) {
       .set({
         status,
         healthScore,
-        lastHeartbeat: status === 'offline' ? '28m ago' : 'Just now',
+        lastHeartbeat: new Date().toISOString(),
       })
       .where(eq(schema.nodes.id, id))
       .returning();

@@ -168,31 +168,39 @@ export function SecurityView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {apiKeys.map((key) => (
-                <tr key={key.id} className="hover:bg-zinc-50/70 transition-colors">
-                  <td className="py-3 px-4 font-semibold text-zinc-900">{key.name}</td>
-                  <td className="py-3 px-4 font-mono text-zinc-500">{key.key_prefix}...</td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-1 flex-wrap">
-                      {key.permissions.map((p) => (
-                        <span key={p} className="text-[9px] font-mono bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded">
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 font-mono text-zinc-500">{key.last_used_at}</td>
-                  <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => revokeApiKey(key.id)}
-                      className="p-1 text-zinc-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
-                      title="Revoke API key"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+              {apiKeys.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-zinc-400">
+                    No active API keys. Generate an API key for command-line access or CI/CD pipelines.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                apiKeys.map((key) => (
+                  <tr key={key.id} className="hover:bg-zinc-50/70 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-zinc-900">{key.name}</td>
+                    <td className="py-3 px-4 font-mono text-zinc-500">{key.key_prefix}...</td>
+                    <td className="py-3 px-4">
+                      <div className="flex gap-1 flex-wrap">
+                        {key.permissions.map((p) => (
+                          <span key={p} className="text-[9px] font-mono bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-zinc-500">{key.last_used_at}</td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => revokeApiKey(key.id)}
+                        className="p-1 text-zinc-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
+                        title="Revoke API key"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -236,20 +244,28 @@ export function SecurityView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 font-mono text-[11px]">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-zinc-50/70 transition-colors">
-                  <td className="py-2.5 px-4 font-semibold text-zinc-900">
-                    <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-800 text-[10px]">
-                      {log.action}
-                    </span>
+              {filteredLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-zinc-400 font-sans">
+                    No security audit logs recorded yet.
                   </td>
-                  <td className="py-2.5 px-4 text-zinc-700 font-sans font-medium">{log.user_name}</td>
-                  <td className="py-2.5 px-4 text-zinc-500">{log.target_id}</td>
-                  <td className="py-2.5 px-4 text-zinc-700 font-sans max-w-sm truncate">{log.details}</td>
-                  <td className="py-2.5 px-4 text-zinc-400">{log.ip_address}</td>
-                  <td className="py-2.5 px-4 text-right text-zinc-400">{log.created_at}</td>
                 </tr>
-              ))}
+              ) : (
+                filteredLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-zinc-50/70 transition-colors">
+                    <td className="py-2.5 px-4 font-semibold text-zinc-900">
+                      <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-800 text-[10px]">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-4 text-zinc-700 font-sans font-medium">{log.user_name}</td>
+                    <td className="py-2.5 px-4 text-zinc-500">{log.target_id}</td>
+                    <td className="py-2.5 px-4 text-zinc-700 font-sans max-w-sm truncate">{log.details}</td>
+                    <td className="py-2.5 px-4 text-zinc-400">{log.ip_address}</td>
+                    <td className="py-2.5 px-4 text-right text-zinc-400">{log.created_at}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

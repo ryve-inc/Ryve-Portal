@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import { config } from '@/lib/config';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -56,21 +57,21 @@ export async function POST(request: Request) {
         parityChunks: 4,
         encryptionAlgorithm: 'AES-256-GCM',
         hash,
-        uploadedBy: 'Alex Rivers',
+        uploadedBy: body.uploadedBy || 'Operator',
       })
       .returning();
 
-    // Audit log
+    // Audit log with real session identity
+    const user = await getCurrentUser(request.headers);
     await db.insert(schema.auditLogs).values({
       organizationId: orgId,
-      userName: 'Alex Rivers',
-      userEmail: 'alex@acme.corp',
+      userName: user?.name || body.userName || 'Operator',
+      userEmail: user?.email || body.userEmail || 'operator@ryve.local',
       action: 'FILE_CHUNKED_AND_DISTRIBUTED',
       targetType: 'file',
       targetId: name,
       details: `Encrypted (AES-256-GCM) and dispersed 12 Reed-Solomon shards across nodes`,
-      ipAddress: '127.0.0.1',
-      createdAt: 'Just now',
+      ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
     });
 
     return NextResponse.json({ success: true, data: newFile });
