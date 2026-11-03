@@ -212,3 +212,4 @@ export async function ensureDatabaseSeeded() {
     console.warn('Database seed check skipped:', err instanceof Error ? err.message : err);
   }
 }
+

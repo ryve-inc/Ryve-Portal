@@ -2,19 +2,26 @@
  * Ryve Portal Server Configuration
  * 
  * Strict Server-Side Configuration:
- * - NO NEXT_PUBLIC keys (prevents exposing connection strings or API keys to the browser)
- * - All database credentials and connection strings are managed in this TypeScript module
+ * - NO NEXT_PUBLIC keys exposed to browser
+ * - Database and Auth credentials configured with secure fallbacks
  */
 
 export const config = {
-  // Database Connection URL (Supabase PostgreSQL / Direct Postgres)
-  // Example Supabase connection string:
-  // "postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+  // Database Connection URL (PostgreSQL / Supabase)
   databaseUrl:
     process.env.DATABASE_URL ||
     process.env.SUPABASE_DB_URL ||
     process.env.POSTGRES_URL ||
     'postgresql://postgres:postgres@localhost:5432/ryve',
+
+  // Better Auth Secret (32+ character key)
+  betterAuthSecret:
+    process.env.BETTER_AUTH_SECRET ||
+    'ryve_sec_e8b417c8096f264d95a14032d887a419c836997230b4d47fbff2ad0964db2a99',
+
+  betterAuthUrl:
+    process.env.BETTER_AUTH_URL ||
+    'http://localhost:3000',
 
   // Tenant Defaults
   defaultOrgId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',

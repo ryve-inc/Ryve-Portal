@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import { RyveProvider, useRyve } from '@/lib/store';
+import { useRyve } from '@/lib/store';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
-import { ToastContainer } from '@/components/ToastContainer';
 import { AddNodeModal } from '@/components/AddNodeModal';
 import { LandingPage } from '@/components/LandingPage';
 
@@ -50,17 +49,12 @@ function PortalContent() {
         </main>
       </div>
 
-      {/* Modals & Toasts */}
+      {/* Modals */}
       <AddNodeModal />
-      <ToastContainer />
     </div>
   );
 }
 
 export default function Page() {
-  return (
-    <RyveProvider>
-      <PortalContent />
-    </RyveProvider>
-  );
+  return <PortalContent />;
 }

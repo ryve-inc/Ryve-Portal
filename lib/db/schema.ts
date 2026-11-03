@@ -1,6 +1,64 @@
 import { pgTable, uuid, text, integer, bigint, boolean, timestamp, numeric, jsonb } from 'drizzle-orm/pg-core';
 
-// 1. Organizations
+// ==============================================================================
+// 1. BETTER AUTH CORE SCHEMA (User, Session, Account, Verification)
+// ==============================================================================
+
+export const user = pgTable('user', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  image: text('image'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const session = pgTable('session', {
+  id: text('id').primaryKey(),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+});
+
+export const account = pgTable('account', {
+  id: text('id').primaryKey(),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const verification = pgTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// ==============================================================================
+// 2. RYVE DOMAIN SCHEMA (Organizations, Networks, Nodes, Files, etc.)
+// ==============================================================================
+
+// Organizations
 export const organizations = pgTable('organizations', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -11,7 +69,7 @@ export const organizations = pgTable('organizations', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 2. Organization Members
+// Organization Members
 export const organizationMembers = pgTable('organization_members', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
@@ -26,7 +84,7 @@ export const organizationMembers = pgTable('organization_members', {
   joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 3. Networks
+// Networks
 export const networks = pgTable('networks', {
   id: uuid('id').primaryKey().defaultRandom(),
   networkIdCode: text('network_id_code').notNull().unique(), // e.g. RYV-NET-8492
@@ -45,7 +103,7 @@ export const networks = pgTable('networks', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 4. Nodes (Customer-Owned vs Ryve-Provided)
+// Nodes (Customer-Owned vs Ryve-Provided)
 export const nodes = pgTable('nodes', {
   id: uuid('id').primaryKey().defaultRandom(),
   nodeIdCode: text('node_id_code').notNull().unique(), // e.g. NODE-SJC-01
@@ -71,7 +129,7 @@ export const nodes = pgTable('nodes', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 5. Enrollment Codes (Customer hardware registration)
+// Enrollment Codes (Customer hardware registration)
 export const enrollmentCodes = pgTable('enrollment_codes', {
   id: uuid('id').primaryKey().defaultRandom(),
   networkId: uuid('network_id')
@@ -86,7 +144,7 @@ export const enrollmentCodes = pgTable('enrollment_codes', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 6. Storage Requests (Ryve-provided managed nodes)
+// Storage Requests (Ryve-provided managed nodes)
 export const storageRequests = pgTable('storage_requests', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
@@ -104,7 +162,7 @@ export const storageRequests = pgTable('storage_requests', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 7. Files (Metadata & Shard specs)
+// Files (Metadata & Shard specs)
 export const files = pgTable('files', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
@@ -128,7 +186,7 @@ export const files = pgTable('files', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 8. Audit Logs
+// Audit Logs
 export const auditLogs = pgTable('audit_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
@@ -144,7 +202,7 @@ export const auditLogs = pgTable('audit_logs', {
   createdAt: text('created_at').notNull(),
 });
 
-// 9. API Keys
+// API Keys
 export const apiKeys = pgTable('api_keys', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
@@ -158,7 +216,7 @@ export const apiKeys = pgTable('api_keys', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// 10. Invoices
+// Invoices
 export const invoices = pgTable('invoices', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')

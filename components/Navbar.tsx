@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRyve } from '@/lib/store';
+import { useSession, signOut } from '@/lib/auth-client';
 import { 
   Network as NetworkIcon, 
   ChevronDown, 
@@ -13,7 +15,10 @@ import {
   Activity,
   Layers,
   Copy,
-  Check
+  Check,
+  LogOut,
+  User,
+  LogIn
 } from 'lucide-react';
 import { copyToClipboard } from '@/lib/format';
 import { UserRole } from '@/types/ryve';
@@ -32,12 +37,24 @@ export function Navbar() {
     addToast
   } = useRyve();
 
+  const { data: session } = useSession();
+
   const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [copiedOrgId, setCopiedOrgId] = useState(false);
 
   const selectedNet = networks.find((n) => n.id === selectedNetworkId);
+
+  const userName = session?.user?.name || 'Alex Rivers';
+  const userEmail = session?.user?.email || 'alex@acme.corp';
+  const userInitials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   const handleCopyOrgId = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,6 +62,20 @@ export function Navbar() {
     setCopiedOrgId(true);
     addToast({ type: 'success', title: 'Organization ID copied', description: 'RYV-ORG-98241' });
     setTimeout(() => setCopiedOrgId(false), 2000);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setIsUserMenuOpen(false);
+      addToast({
+        type: 'info',
+        title: 'Signed out',
+        description: 'You have been signed out of Ryve Portal.',
+      });
+    } catch {
+      setIsUserMenuOpen(false);
+    }
   };
 
   return (
@@ -82,6 +113,7 @@ export function Navbar() {
               setIsNetworkDropdownOpen(!isNetworkDropdownOpen);
               setIsRoleDropdownOpen(false);
               setIsNotificationsOpen(false);
+              setIsUserMenuOpen(false);
             }}
             className="flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-zinc-200 hover:border-zinc-300 bg-zinc-50/60 hover:bg-zinc-100/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer"
           >
@@ -174,6 +206,7 @@ export function Navbar() {
               setIsRoleDropdownOpen(!isRoleDropdownOpen);
               setIsNetworkDropdownOpen(false);
               setIsNotificationsOpen(false);
+              setIsUserMenuOpen(false);
             }}
             className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-zinc-200 hover:border-zinc-300 text-xs text-zinc-700 bg-white cursor-pointer"
             title="Change current view role to test role-based permissions"
@@ -215,6 +248,7 @@ export function Navbar() {
               setIsNotificationsOpen(!isNotificationsOpen);
               setIsNetworkDropdownOpen(false);
               setIsRoleDropdownOpen(false);
+              setIsUserMenuOpen(false);
             }}
             className="p-1.5 rounded-md border border-zinc-200 hover:border-zinc-300 text-zinc-600 hover:text-zinc-900 bg-white relative cursor-pointer"
           >
@@ -245,11 +279,62 @@ export function Navbar() {
           )}
         </div>
 
-        {/* User Profile Avatar */}
-        <div className="flex items-center gap-2 pl-1 border-l border-zinc-200">
-          <div className="w-7 h-7 rounded-full bg-zinc-800 text-white font-medium text-xs flex items-center justify-center border border-zinc-700">
-            AR
-          </div>
+        {/* User Profile Avatar & Menu */}
+        <div className="relative pl-1 border-l border-zinc-200">
+          <button
+            onClick={() => {
+              setIsUserMenuOpen(!isUserMenuOpen);
+              setIsNotificationsOpen(false);
+              setIsNetworkDropdownOpen(false);
+              setIsRoleDropdownOpen(false);
+            }}
+            className="w-7 h-7 rounded-full bg-zinc-800 text-white font-medium text-xs flex items-center justify-center border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer"
+            title={userName}
+          >
+            {userInitials}
+          </button>
+
+          {isUserMenuOpen && (
+            <div className="absolute right-0 mt-1.5 w-56 bg-white border border-zinc-200 rounded-lg shadow-2xl py-2 z-50 animate-in fade-in-50 zoom-in-95 text-xs">
+              <div className="px-3 py-2 border-b border-zinc-100">
+                <p className="font-semibold text-zinc-900 truncate">{userName}</p>
+                <p className="font-mono text-[10px] text-zinc-400 truncate mt-0.5">{userEmail}</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span className="text-[10px] text-zinc-500 capitalize">{currentUserRole} Access</span>
+                </div>
+              </div>
+
+              <div className="py-1">
+                <Link
+                  href="/login"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-1.5 flex items-center gap-2 text-zinc-700 hover:bg-zinc-50 transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Switch Account / Sign In</span>
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-1.5 flex items-center gap-2 text-zinc-700 hover:bg-zinc-50 transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Register New Org</span>
+                </Link>
+              </div>
+
+              <div className="pt-1 border-t border-zinc-100">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-3 py-1.5 flex items-center gap-2 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer font-medium"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
