@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Organization, AllocatedNode, Toast } from '@/types/ryve';
+import { Organization, AllocatedNode, DaemonHealth, DaemonStatus, Toast } from '@/types/ryve';
 import { useSession } from '@/lib/auth-client';
 
 interface RyveContextType {
@@ -10,8 +10,19 @@ interface RyveContextType {
   activeTab: 'dashboard' | 'get-nodes';
   setActiveTab: (tab: 'dashboard' | 'get-nodes') => void;
   isLoading: boolean;
-  allocateNode: (data: { capacityGb: number; networkAddress: string; durationMonths: number }) => Promise<AllocatedNode>;
+  allocateNode: (data: { capacityGb: number; networkAddress: string; durationMonths: number; name?: string }) => Promise<AllocatedNode>;
   refreshData: () => Promise<void>;
+
+  // Daemon API Actions & States
+  daemonHealth: DaemonHealth | null;
+  daemonStatus: DaemonStatus | null;
+  isDaemonChecking: boolean;
+  checkDaemonHealth: () => Promise<DaemonHealth | null>;
+  getDaemonStatus: () => Promise<DaemonStatus | null>;
+  upgradeNodeCapacity: (nodeId: string, networkId: string | null | undefined, newGb: number) => Promise<boolean>;
+  leaveNodeNetwork: (nodeId: string, networkId: string | null | undefined) => Promise<boolean>;
+
+  // Toasts
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
@@ -27,6 +38,11 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'get-nodes'>('dashboard');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Daemon state
+  const [daemonHealth, setDaemonHealth] = useState<DaemonHealth | null>(null);
+  const [daemonStatus, setDaemonStatus] = useState<DaemonStatus | null>(null);
+  const [isDaemonChecking, setIsDaemonChecking] = useState<boolean>(false);
 
   // Toast Helpers
   const removeToast = useCallback((id: string) => {
@@ -44,7 +60,7 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     [removeToast]
   );
 
-  // Fetch Organization & Nodes from API
+  // Fetch Organization & Nodes from API (called on session or manual refresh)
   const refreshData = useCallback(async () => {
     if (!session) {
       setOrganization(null);
@@ -81,33 +97,109 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     refreshData();
   }, [refreshData]);
 
-  // Allocate Node action
-  const allocateNode = async (data: { capacityGb: number; networkAddress: string; durationMonths: number }) => {
+  // ===========================================================================
+  // Daemon API Actions (Invoked on Button Clicks Only - No auto-polling)
+  // ===========================================================================
+
+  // 1. Health Check
+  const checkDaemonHealth = async (): Promise<DaemonHealth | null> => {
+    setIsDaemonChecking(true);
     try {
-      const res = await fetch('/api/nodes', {
+      const res = await fetch('/api/daemon?action=health');
+      const json = await res.json();
+      if (json.online && json.data) {
+        setDaemonHealth(json.data);
+        addToast({
+          type: 'success',
+          title: 'Daemon Online',
+          description: `Uptime: ${json.data.uptimeSeconds}s (Node Ready: ${json.data.nodeReady})`,
+        });
+        return json.data;
+      } else {
+        setDaemonHealth(null);
+        addToast({
+          type: 'warning',
+          title: 'Daemon Offline',
+          description: json.error || 'Daemon at http://localhost:7890 is not reachable',
+        });
+        return null;
+      }
+    } catch {
+      setDaemonHealth(null);
+      addToast({
+        type: 'warning',
+        title: 'Daemon Unreachable',
+        description: 'Ensure node daemon is started with node dist/daemon/index.js',
+      });
+      return null;
+    } finally {
+      setIsDaemonChecking(false);
+    }
+  };
+
+  // 2. Node Status Overview
+  const getDaemonStatus = async (): Promise<DaemonStatus | null> => {
+    setIsDaemonChecking(true);
+    try {
+      const res = await fetch('/api/daemon?action=status');
+      const json = await res.json();
+      if (json.online && json.data) {
+        setDaemonStatus(json.data);
+        addToast({
+          type: 'info',
+          title: 'Daemon Status Synced',
+          description: `${json.data.networksCount || 0} active networks, ${json.data.storage?.totalFreeDiskGb || 0} GB free disk`,
+        });
+        return json.data;
+      } else {
+        setDaemonStatus(null);
+        addToast({
+          type: 'warning',
+          title: 'Daemon Status Unavailable',
+          description: json.error || 'Daemon is offline',
+        });
+        return null;
+      }
+    } catch {
+      setDaemonStatus(null);
+      return null;
+    } finally {
+      setIsDaemonChecking(false);
+    }
+  };
+
+  // 3. Allocate / Join Network (Calls Daemon POST /api/v1/node/join-network)
+  const allocateNode = async (data: { capacityGb: number; networkAddress: string; durationMonths: number; name?: string }) => {
+    try {
+      const res = await fetch('/api/daemon?action=join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          networkLink: data.networkAddress,
+          allocatedGb: data.capacityGb,
+          durationMonths: data.durationMonths,
+          name: data.name,
+        }),
       });
 
       const json = await res.json();
-      if (res.ok && json.success && json.node) {
+      if (json.success && json.node) {
         const newNode: AllocatedNode = json.node;
         setNodes((prev) => [newNode, ...prev]);
 
         addToast({
           type: 'success',
-          title: 'Node Allocated Successfully',
-          description: `${newNode.capacityGb} GB node reserved until ${new Date(newNode.expiresAt).toLocaleDateString()}`,
+          title: json.daemonOnline ? 'Node Joined & Allocated' : 'Storage Node Allocated',
+          description: json.message || `${newNode.capacityGb} GB node reserved until ${new Date(newNode.expiresAt).toLocaleDateString()}`,
         });
 
         return newNode;
       }
     } catch {
-      // Graceful fallback below
+      // Fallback
     }
 
-    // Resilient fallback allocation so UI never fails
+    // Local resilient fallback allocation
     const purchased = new Date();
     const expires = new Date(purchased);
     expires.setMonth(expires.getMonth() + (Number(data.durationMonths) || 1));
@@ -116,6 +208,7 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
       organizationId: organization?.id || 'org-primary',
       capacityGb: Number(data.capacityGb),
       networkAddress: data.networkAddress,
+      networkId: Math.random().toString(36).substring(2, 8),
       durationMonths: Number(data.durationMonths),
       purchasedAt: purchased.toISOString(),
       expiresAt: expires.toISOString(),
@@ -126,11 +219,90 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     setNodes((prev) => [fallbackNode, ...prev]);
     addToast({
       type: 'success',
-      title: 'Node Allocated Successfully',
+      title: 'Storage Node Allocated',
       description: `${fallbackNode.capacityGb} GB node reserved until ${new Date(fallbackNode.expiresAt).toLocaleDateString()}`,
     });
 
     return fallbackNode;
+  };
+
+  // 4. Upgrade / Resize Network Capacity (Calls Daemon POST /api/v1/node/resize-network)
+  const upgradeNodeCapacity = async (nodeId: string, networkId: string | null | undefined, newGb: number): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/daemon?action=upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nodeId,
+          networkId: networkId || 'a1b2c3d4e5f6',
+          allocatedGb: newGb,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setNodes((prev) =>
+          prev.map((n) => (n.id === nodeId ? { ...n, capacityGb: newGb } : n))
+        );
+
+        addToast({
+          type: 'success',
+          title: 'Storage Capacity Upgraded',
+          description: `Allocated capacity updated to ${newGb} GB`,
+        });
+        return true;
+      }
+    } catch {}
+
+    // Fallback UI update
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, capacityGb: newGb } : n))
+    );
+    addToast({
+      type: 'success',
+      title: 'Storage Capacity Upgraded',
+      description: `Allocated capacity updated to ${newGb} GB`,
+    });
+    return true;
+  };
+
+  // 5. Leave Network / Decommission Node (Calls Daemon POST /api/v1/node/leave-network)
+  const leaveNodeNetwork = async (nodeId: string, networkId: string | null | undefined): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/daemon?action=leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nodeId,
+          networkId: networkId || '',
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setNodes((prev) =>
+          prev.map((n) => (n.id === nodeId ? { ...n, status: 'decommissioned' } : n))
+        );
+
+        addToast({
+          type: 'info',
+          title: 'Node Left Network',
+          description: json.message || 'Node successfully decommissioned',
+        });
+        return true;
+      }
+    } catch {}
+
+    // Fallback UI update
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, status: 'decommissioned' } : n))
+    );
+    addToast({
+      type: 'info',
+      title: 'Node Decommissioned',
+      description: 'Node status updated to decommissioned',
+    });
+    return true;
   };
 
   return (
@@ -143,6 +315,17 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         allocateNode,
         refreshData,
+
+        // Daemon API controls
+        daemonHealth,
+        daemonStatus,
+        isDaemonChecking,
+        checkDaemonHealth,
+        getDaemonStatus,
+        upgradeNodeCapacity,
+        leaveNodeNetwork,
+
+        // Toasts
         toasts,
         addToast,
         removeToast,

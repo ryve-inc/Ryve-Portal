@@ -101,6 +101,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const capacityGb = Number(body.capacityGb) || 100;
     const networkAddress = String(body.networkAddress || '127.0.0.1:9000').trim();
+    const networkId = body.networkId ? String(body.networkId).trim() : null;
     const durationMonths = Number(body.durationMonths) || 1;
 
     // Calculate dates
@@ -115,6 +116,7 @@ export async function POST(request: Request) {
           organizationId: orgId,
           capacityGb,
           networkAddress,
+          networkId,
           durationMonths,
           purchasedAt,
           expiresAt,
@@ -133,6 +135,7 @@ export async function POST(request: Request) {
         organizationId: orgId,
         capacityGb,
         networkAddress,
+        networkId,
         durationMonths,
         purchasedAt: purchasedAt.toISOString(),
         expiresAt: expiresAt.toISOString(),

@@ -64,6 +64,9 @@ export async function ensureTables() {
       ALTER TABLE nodes ADD COLUMN IF NOT EXISTS network_address text;
     `);
     await db.execute(sql`
+      ALTER TABLE nodes ADD COLUMN IF NOT EXISTS network_id text;
+    `);
+    await db.execute(sql`
       ALTER TABLE nodes ADD COLUMN IF NOT EXISTS duration_months integer DEFAULT 1;
     `);
     await db.execute(sql`

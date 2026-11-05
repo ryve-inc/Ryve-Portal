@@ -12,23 +12,43 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Loader2, 
-  Sparkles,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  Link as LinkIcon
 } from 'lucide-react';
 
 export function GetNodesView() {
-  const { allocateNode, setActiveTab } = useRyve();
+  const { allocateNode, setActiveTab, organization } = useRyve();
 
   // Form State
-  const [capacityGb, setCapacityGb] = useState<number>(500);
+  const [capacityGb, setCapacityGb] = useState<number>(5);
   const [networkAddress, setNetworkAddress] = useState<string>('');
   const [durationMonths, setDurationMonths] = useState<number>(3);
+  const [networkName, setNetworkName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Success state holding allocated node
   const [allocatedResult, setAllocatedResult] = useState<AllocatedNode | null>(null);
+
+  // Helper to autofill sample 64-char hex P2P Link from daemon docs
+  const handleUseSampleLink = () => {
+    const sampleLink = 'p2p-drive://network/a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90?name=Customer-Acme';
+    setNetworkAddress(sampleLink);
+    if (!networkName) setNetworkName('Customer-Acme');
+  };
+
+  // Helper to generate a random valid 64-hex P2P Link
+  const handleGenerateLink = () => {
+    const chars = '0123456789abcdef';
+    let hex = '';
+    for (let i = 0; i < 64; i++) {
+      hex += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const name = networkName || organization?.name || 'Customer-Acme';
+    setNetworkAddress(`p2p-drive://network/${hex}?name=${encodeURIComponent(name)}`);
+  };
 
   // Calculated Preview Expiry Date
   const calculatePreviewExpiry = () => {
@@ -51,7 +71,7 @@ export function GetNodesView() {
     }
 
     if (!networkAddress.trim()) {
-      setErrorMessage('Please enter the network address (IP or hostname) for this node.');
+      setErrorMessage('Please enter the network address or P2P network link.');
       return;
     }
 
@@ -67,6 +87,7 @@ export function GetNodesView() {
         capacityGb: Number(capacityGb),
         networkAddress: networkAddress.trim(),
         durationMonths: Number(durationMonths),
+        name: networkName.trim() || organization?.name || 'Customer-Acme',
       });
 
       setAllocatedResult(newNode);
@@ -114,7 +135,7 @@ export function GetNodesView() {
             Node Successfully Allocated!
           </h2>
           <p className="text-xs text-zinc-600 mt-1.5 max-w-md mx-auto">
-            Your distributed storage node has been provisioned and enrolled into your organization&apos;s mesh.
+            Your storage quota has been provisioned on the Ryve Managed Node Daemon and registered in your organization mesh.
           </p>
 
           {/* Allocation Details Card */}
@@ -124,19 +145,28 @@ export function GetNodesView() {
                 <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
                   Capacity Allocated
                 </span>
-                <span className="text-xl font-bold font-mono text-zinc-950 mt-0.5 block">
+                <span className="text-2xl font-bold font-mono text-zinc-950 mt-0.5 block">
                   {allocatedResult.capacityGb} GB
                 </span>
               </div>
 
               <div>
                 <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
-                  Network Address
+                  Network Identifier
                 </span>
-                <span className="text-sm font-mono font-medium text-zinc-900 mt-1 block truncate">
-                  {allocatedResult.networkAddress}
+                <span className="text-sm font-mono font-bold text-emerald-700 mt-1 block">
+                  {allocatedResult.networkId || allocatedResult.id.substring(0, 12)}
                 </span>
               </div>
+            </div>
+
+            <div>
+              <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+                Network Target Address
+              </span>
+              <span className="text-xs font-mono font-medium text-zinc-800 mt-1 block truncate" title={allocatedResult.networkAddress}>
+                {allocatedResult.networkAddress}
+              </span>
             </div>
 
             {/* Crucial Dates: Purchased & Expiry */}
@@ -163,10 +193,10 @@ export function GetNodesView() {
             </div>
 
             <div className="pt-2 flex items-center justify-between text-xs text-zinc-500 font-mono">
-              <span>Duration: {allocatedResult.durationMonths} Month(s)</span>
+              <span>Lease Duration: {allocatedResult.durationMonths} Month(s)</span>
               <span className="flex items-center gap-1 text-emerald-700 font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Active Node
+                Active Node Allocation
               </span>
             </div>
           </div>
@@ -198,11 +228,16 @@ export function GetNodesView() {
     <div className="max-w-3xl mx-auto py-2 animate-in fade-in duration-300">
       {/* Page Header */}
       <div className="pb-6 border-b border-zinc-200">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-950">
-          Get Storage Nodes
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-950">
+            Get Storage Nodes
+          </h1>
+          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200">
+            POST /api/v1/node/join-network
+          </span>
+        </div>
         <p className="text-xs text-zinc-500 mt-1">
-          Specify your capacity requirement, network destination, and lease duration to provision nodes instantly.
+          Join your customer network to the Ryve Managed Storage Node Daemon (localhost:7890) and provision dedicated capacity.
         </p>
       </div>
 
@@ -224,7 +259,7 @@ export function GetNodesView() {
                 <span>1. Storage Capacity Needed (GB)</span>
               </label>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Enter the amount of storage space required for this node.
+                Dedicated quota to allocate on the node daemon (allocatedGb).
               </p>
             </div>
             <span className="text-lg font-extrabold font-mono text-zinc-950 bg-zinc-100 px-3 py-1 rounded-xl">
@@ -232,9 +267,9 @@ export function GetNodesView() {
             </span>
           </div>
 
-          {/* Quick Presets */}
+          {/* Quick Presets matching daemon docs */}
           <div className="flex flex-wrap gap-2 pt-1">
-            {[100, 250, 500, 1000, 2500, 5000].map((preset) => (
+            {[5, 10, 25, 50, 100, 500].map((preset) => (
               <button
                 type="button"
                 key={preset}
@@ -254,37 +289,71 @@ export function GetNodesView() {
             <input
               type="number"
               min="1"
-              max="100000"
+              max="50000"
               required
               value={capacityGb}
               onChange={(e) => setCapacityGb(Math.max(1, parseInt(e.target.value) || 0))}
-              placeholder="e.g. 500"
+              placeholder="e.g. 5"
               className="w-full px-4 py-2.5 bg-zinc-50/70 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
             />
           </div>
         </div>
 
-        {/* 2. Network Address */}
+        {/* 2. Network Address / Link Input */}
         <div className="p-6 bg-white border border-zinc-200/90 rounded-2xl shadow-xs space-y-3">
-          <div>
-            <label className="text-sm font-bold text-zinc-950 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-emerald-600" />
-              <span>2. Network Address</span>
-            </label>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Enter the target IP address, DNS domain, or peer address for the node.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <label className="text-sm font-bold text-zinc-950 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-emerald-600" />
+                <span>2. Network Address / P2P Network Link</span>
+              </label>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                The 64-character hex link or network address (networkLink).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleUseSampleLink}
+                className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                title="Paste sample link from documentation"
+              >
+                <LinkIcon className="w-3 h-3 text-zinc-500" />
+                <span>Use Sample Link</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleGenerateLink}
+                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                title="Generate fresh 64-character hex P2P link"
+              >
+                <Sparkles className="w-3 h-3 text-emerald-600" />
+                <span>Generate Hex</span>
+              </button>
+            </div>
           </div>
 
-          <div className="relative">
+          <div className="space-y-2 pt-1">
             <input
               type="text"
               required
               value={networkAddress}
               onChange={(e) => setNetworkAddress(e.target.value)}
-              placeholder="e.g. 192.168.1.120:9000 or node-east.ryve.internal:443"
-              className="w-full px-4 py-2.5 bg-zinc-50/70 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
+              placeholder="e.g. p2p-drive://network/a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90?name=Customer-Acme"
+              className="w-full px-4 py-2.5 bg-zinc-50/70 border border-zinc-200 rounded-xl text-xs font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
             />
+
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={networkName}
+                onChange={(e) => setNetworkName(e.target.value)}
+                placeholder="Network display name (e.g. Customer-Acme)"
+                className="w-full px-3.5 py-2 bg-zinc-50/70 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              />
+            </div>
           </div>
         </div>
 
@@ -297,7 +366,7 @@ export function GetNodesView() {
                 <span>3. Duration Required (Months)</span>
               </label>
               <p className="text-xs text-zinc-500 mt-0.5">
-                How many months should this node remain actively provisioned?
+                How many months should this node storage allocation remain active?
               </p>
             </div>
             <span className="text-lg font-extrabold font-mono text-zinc-950 bg-zinc-100 px-3 py-1 rounded-xl">
@@ -331,13 +400,13 @@ export function GetNodesView() {
               required
               value={durationMonths}
               onChange={(e) => setDurationMonths(Math.max(1, parseInt(e.target.value) || 1))}
-              placeholder="e.g. 6"
+              placeholder="e.g. 3"
               className="w-full px-4 py-2.5 bg-zinc-50/70 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
             />
           </div>
         </div>
 
-        {/* Live Preview Summary */}
+        {/* Live Preview Summary & Join Network Button */}
         <div className="p-5 bg-gradient-to-r from-emerald-50/70 to-zinc-50 border border-emerald-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-1">
             <div className="text-xs font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-1.5">
@@ -358,11 +427,11 @@ export function GetNodesView() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                <span>Allocating Node...</span>
+                <span>Joining Network...</span>
               </>
             ) : (
               <>
-                <span>Confirm & Allocate Node</span>
+                <span>Join Network & Allocate Node</span>
                 <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
               </>
             )}
@@ -372,4 +441,3 @@ export function GetNodesView() {
     </div>
   );
 }
-

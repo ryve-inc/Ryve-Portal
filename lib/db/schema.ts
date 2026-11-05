@@ -74,9 +74,10 @@ export const nodes = pgTable('nodes', {
     .references(() => organizations.id, { onDelete: 'cascade' }),
   capacityGb: integer('capacity_gb').notNull(),
   networkAddress: text('network_address').notNull(),
+  networkId: text('network_id'),
   durationMonths: integer('duration_months').notNull().default(1),
   purchasedAt: timestamp('purchased_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  status: text('status').notNull().default('active'), // 'active' | 'expired'
+  status: text('status').notNull().default('active'), // 'active' | 'expired' | 'decommissioned'
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
