@@ -3,7 +3,7 @@
  * 
  * Strict Server-Side Configuration:
  * - NO NEXT_PUBLIC keys exposed to browser
- * - Database (Neon Serverless PostgreSQL) and Auth credentials configured with secure fallbacks
+ * - Neon Serverless PostgreSQL & Better Auth credentials
  */
 
 function resolveDatabaseUrl(): string {
@@ -57,19 +57,6 @@ export const config = {
   betterAuthUrl:
     process.env.BETTER_AUTH_URL ||
     'http://localhost:3000',
-
-  // Tenant Defaults
-  defaultOrgId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  defaultOrgName: 'Ryve Organization',
-  defaultOrgSlug: 'ryve-org',
-
-  // Storage Pricing (Per TB / Month in USD)
-  ryveStoragePricePerTb: 4.0,
-
-  // Node Gossip & Monitoring
-  heartbeatIntervalSec: 10,
-  defaultRedundancyPolicy: 'Reed-Solomon (8+4)',
-  encryptionStandard: 'AES-256-GCM Zero-Knowledge',
 };
 
 export const isDatabaseConfigured = Boolean(

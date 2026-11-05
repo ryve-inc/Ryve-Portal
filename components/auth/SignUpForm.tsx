@@ -22,7 +22,7 @@ import {
 
 export function SignUpForm() {
   const router = useRouter();
-  const { addToast, updateOrganization } = useRyve();
+  const { addToast } = useRyve();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -71,13 +71,6 @@ export function SignUpForm() {
           msg = 'Database tables are missing. Please run "npx drizzle-kit push" to apply the schema.';
         }
         throw new Error(msg);
-      }
-
-      if (orgName.trim()) {
-        updateOrganization({
-          name: orgName.trim(),
-          slug: orgName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        });
       }
 
       setSuccessMessage('Account registered successfully! Entering Ryve control plane...');
