@@ -116,7 +116,7 @@ interface RyveContextType {
 const RyveContext = createContext<RyveContextType | undefined>(undefined);
 
 export function RyveProvider({ children }: { children: ReactNode }) {
-  const [currentView, setCurrentView] = useState<string>('landing');
+  const [currentView, setCurrentView] = useState<string>('dashboard');
   const [selectedNetworkId, setSelectedNetworkId] = useState<string>('all');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('owner');
 

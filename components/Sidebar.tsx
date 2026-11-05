@@ -13,7 +13,6 @@ import {
   ShieldCheck, 
   Users, 
   Terminal,
-  Globe,
   ChevronRight,
   Sparkles
 } from 'lucide-react';
@@ -111,15 +110,6 @@ export function Sidebar() {
           </div>
           <span className="text-[9px] bg-emerald-100 text-emerald-700 font-mono px-1 rounded">ready</span>
         </div>
-
-        {/* Switch to Landing Page */}
-        <button
-          onClick={() => setCurrentView('landing')}
-          className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50 rounded transition-colors text-left cursor-pointer"
-        >
-          <Globe className="w-3.5 h-3.5 text-zinc-400" />
-          <span>Public Landing Page</span>
-        </button>
       </div>
     </aside>
   );

@@ -1,28 +1,24 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from './schema';
 import { config, isDatabaseConfigured } from '../config';
 
-// Global connection cache for Next.js hot-reloading
+// Neon connection pool cache for Next.js hot-reloading
 const globalForDb = globalThis as unknown as {
-  conn: postgres.Sql | undefined;
+  pool: Pool | undefined;
 };
 
-// Initialize postgres client connection
-const conn =
-  globalForDb.conn ??
-  postgres(config.databaseUrl, {
-    max: 10,
-    idle_timeout: 20,
-    connect_timeout: 10,
-    ssl: config.databaseUrl.includes('supabase') ? 'require' : undefined,
+// Initialize Neon serverless pool connection
+const pool =
+  globalForDb.pool ??
+  new Pool({
+    connectionString: config.databaseUrl,
   });
 
 if (process.env.NODE_ENV !== 'production') {
-  globalForDb.conn = conn;
+  globalForDb.pool = pool;
 }
 
-export const db = drizzle(conn, { schema });
+export const db = drizzle(pool, { schema });
 export { schema };
 export { isDatabaseConfigured };
-

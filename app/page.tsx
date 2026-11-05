@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { useRyve } from '@/lib/store';
+import { useSession } from '@/lib/auth-client';
+import { LandingPage } from '@/components/LandingPage';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { AddNodeModal } from '@/components/AddNodeModal';
-import { LandingPage } from '@/components/LandingPage';
 
 // Views
 import { DashboardView } from '@/components/views/DashboardView';
@@ -18,12 +19,8 @@ import { BillingView } from '@/components/views/BillingView';
 import { SecurityView } from '@/components/views/SecurityView';
 import { OrganizationView } from '@/components/views/OrganizationView';
 
-function PortalContent() {
+function AuthenticatedPortal() {
   const { currentView } = useRyve();
-
-  if (currentView === 'landing') {
-    return <LandingPage />;
-  }
 
   return (
     <div className="min-h-screen bg-zinc-50/50 text-zinc-950 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-950">
@@ -56,5 +53,25 @@ function PortalContent() {
 }
 
 export default function Page() {
-  return <PortalContent />;
+  const { data: session, isPending } = useSession();
+
+  // Loading state while checking session
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center font-sans">
+        <div className="w-12 h-12 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-bold text-lg tracking-widest shadow-md animate-pulse">
+          RY
+        </div>
+        <p className="mt-3 text-xs font-mono text-zinc-400">Verifying Ryve session...</p>
+      </div>
+    );
+  }
+
+  // If authenticated, show the control plane dashboard
+  if (session) {
+    return <AuthenticatedPortal />;
+  }
+
+  // If unauthenticated, show the public landing page
+  return <LandingPage />;
 }

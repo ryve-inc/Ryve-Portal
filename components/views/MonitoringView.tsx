@@ -1,20 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRyve } from '@/lib/store';
 import { 
-  Activity, 
-  Server, 
-  Wifi, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
   ShieldCheck, 
   RefreshCw, 
-  Zap, 
-  XOctagon
 } from 'lucide-react';
-import { formatBytes } from '@/lib/format';
 
 export function MonitoringView() {
   const { nodes, networks, stats, toggleNodeStatus, addToast, auditLogs } = useRyve();
@@ -137,7 +128,7 @@ export function MonitoringView() {
               >
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="font-semibold text-xs text-zinc-900 block truncate max-w-[180px]">
+                  <span className="font-semibold text-xs text-zinc-900 block truncate max-w-45">
                     {node.name}
                   </span>
                   <span className="font-mono text-[10px] text-zinc-400">{node.node_id_code}</span>

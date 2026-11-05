@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { AuthCard } from '@/components/AuthCard';
+import { LoginForm } from '@/components/auth/LoginForm';
 import { ArrowLeft, ShieldCheck, Server, HardDrive } from 'lucide-react';
 
 export const metadata = {
@@ -18,7 +18,7 @@ export default function LoginPage() {
           className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Ryve Mesh</span>
+          <span>Ryve Distributed Storage Mesh</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -29,7 +29,7 @@ export default function LoginPage() {
 
       {/* Main Centered Auth Form */}
       <div className="flex-1 flex items-center justify-center py-10">
-        <AuthCard initialMode="login" />
+        <LoginForm />
       </div>
 
       {/* Bottom Footer Technical Features */}

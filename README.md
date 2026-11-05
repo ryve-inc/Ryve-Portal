@@ -52,9 +52,9 @@ The **Ryve Portal acts as the central control panel for the Ryve distributed eco
 
 ---
 
-## Database Setup (Drizzle ORM & PostgreSQL / Supabase)
+## Database Setup (Drizzle ORM & Neon Serverless PostgreSQL)
 
-This project uses **Drizzle ORM** with **PostgreSQL** (compatible with Supabase, Neon, or local Postgres). All configurations are kept strictly server-side in TypeScript ([lib/config.ts](file:///c:/Users/asus/Downloads/ryveportal/lib/config.ts)) with **no NEXT_PUBLIC keys exposed to the client browser**.
+This project uses **Drizzle ORM** with **Neon Serverless PostgreSQL** (`@neondatabase/serverless`). All configurations are kept strictly server-side in TypeScript ([lib/config.ts](file:///c:/Users/asus/Downloads/ryveportal/lib/config.ts)) with **no NEXT_PUBLIC keys exposed to the client browser**.
 
 ### 1. Database Schema
 The complete type-safe database schema is defined in [lib/db/schema.ts](file:///c:/Users/asus/Downloads/ryveportal/lib/db/schema.ts):
@@ -68,17 +68,18 @@ The complete type-safe database schema is defined in [lib/db/schema.ts](file:///
 - `audit_logs`
 - `api_keys`
 - `invoices`
+- Better Auth tables (`user`, `session`, `account`, `verification`)
 
 ### 2. Environment Configuration (Server-Side Only)
-Set your `DATABASE_URL` in `.env.local` or configure it directly in [lib/config.ts](file:///c:/Users/asus/Downloads/ryveportal/lib/config.ts):
+Set your `DATABASE_URL` in `.env` or `.env.local`:
 ```env
-# PostgreSQL / Supabase Direct Connection
-DATABASE_URL=postgresql://postgres:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+# Neon Serverless PostgreSQL Connection
+DATABASE_URL=postgresql://neondb_owner:YOUR_PASSWORD@ep-random-name.us-east-2.aws.neon.tech/neondb?sslmode=require
 ```
 
 ### 3. Migrations & Drizzle Studio
 ```bash
-# Push schema directly to your database
+# Push schema directly to your Neon database
 npx drizzle-kit push
 
 # Or open Drizzle Studio UI
