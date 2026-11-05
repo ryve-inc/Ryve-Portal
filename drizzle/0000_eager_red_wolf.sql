@@ -17,7 +17,7 @@ CREATE TABLE "account" (
 CREATE TABLE "nodes" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"capacity_gb" integer NOT NULL,
+	"capacity_gb" double precision NOT NULL,
 	"network_address" text NOT NULL,
 	"duration_months" integer DEFAULT 1 NOT NULL,
 	"purchased_at" timestamp with time zone DEFAULT now() NOT NULL,

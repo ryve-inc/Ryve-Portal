@@ -22,7 +22,7 @@ export function GetNodesView() {
   const { allocateNode, setActiveTab, organization } = useRyve();
 
   // Form State
-  const [capacityGb, setCapacityGb] = useState<number>(5);
+  const [capacityGb, setCapacityGb] = useState<number>(0.5);
   const [networkAddress, setNetworkAddress] = useState<string>('');
   const [durationMonths, setDurationMonths] = useState<number>(3);
   const [networkName, setNetworkName] = useState<string>('');
@@ -269,7 +269,7 @@ export function GetNodesView() {
 
           {/* Quick Presets matching daemon docs */}
           <div className="flex flex-wrap gap-2 pt-1">
-            {[5, 10, 25, 50, 100, 500].map((preset) => (
+            {[0.5, 1, 2, 5, 10, 20].map((preset) => (
               <button
                 type="button"
                 key={preset}
@@ -280,7 +280,7 @@ export function GetNodesView() {
                     : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700'
                 }`}
               >
-                {preset >= 1000 ? `${preset / 1000} TB` : `${preset} GB`}
+                {preset} GB
               </button>
             ))}
           </div>
@@ -288,12 +288,13 @@ export function GetNodesView() {
           <div className="pt-2">
             <input
               type="number"
-              min="1"
+              step="0.1"
+              min="0.1"
               max="50000"
               required
               value={capacityGb}
-              onChange={(e) => setCapacityGb(Math.max(1, parseInt(e.target.value) || 0))}
-              placeholder="e.g. 5"
+              onChange={(e) => setCapacityGb(Math.max(0.1, parseFloat(e.target.value) || 0))}
+              placeholder="e.g. 0.5"
               className="w-full px-4 py-2.5 bg-zinc-50/70 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
             />
           </div>

@@ -20,7 +20,7 @@ interface RyveContextType {
   checkDaemonHealth: () => Promise<DaemonHealth | null>;
   getDaemonStatus: () => Promise<DaemonStatus | null>;
   upgradeNodeCapacity: (nodeId: string, networkId: string | null | undefined, newGb: number) => Promise<boolean>;
-  leaveNodeNetwork: (nodeId: string, networkId: string | null | undefined) => Promise<boolean>;
+  leaveNodeNetwork: (nodeId: string, networkId: string | null | undefined, networkAddress?: string) => Promise<boolean>;
 
   // Toasts
   toasts: Toast[];
@@ -267,7 +267,7 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 5. Leave Network / Decommission Node (Calls Daemon POST /api/v1/node/leave-network)
-  const leaveNodeNetwork = async (nodeId: string, networkId: string | null | undefined): Promise<boolean> => {
+  const leaveNodeNetwork = async (nodeId: string, networkId: string | null | undefined, networkAddress?: string): Promise<boolean> => {
     try {
       const res = await fetch('/api/daemon?action=leave', {
         method: 'POST',
@@ -275,6 +275,7 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           nodeId,
           networkId: networkId || '',
+          networkAddress: networkAddress || '',
         }),
       });
 

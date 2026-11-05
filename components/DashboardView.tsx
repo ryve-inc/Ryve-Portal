@@ -78,7 +78,7 @@ export function DashboardView() {
     if (!leavingNode) return;
     setIsSubmittingLeave(true);
     try {
-      await leaveNodeNetwork(leavingNode.id, leavingNode.networkId);
+      await leaveNodeNetwork(leavingNode.id, leavingNode.networkId, leavingNode.networkAddress);
       setLeavingNode(null);
     } finally {
       setIsSubmittingLeave(false);
@@ -176,31 +176,10 @@ export function DashboardView() {
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold font-mono text-zinc-950">
-              {totalCapacityGb >= 1000 ? `${(totalCapacityGb / 1000).toFixed(1)} TB` : `${totalCapacityGb} GB`}
+              {totalCapacityGb >= 1000 ? `${(totalCapacityGb / 1000).toFixed(2)} TB` : `${Number(totalCapacityGb.toFixed(2))} GB`}
             </div>
             <p className="mt-2 text-xs text-zinc-500">
               Total active storage capacity across your network
-            </p>
-          </div>
-        </div>
-
-        {/* Managed Daemon Bridge */}
-        <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Daemon API Target
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
-              <Activity className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-lg font-bold font-mono text-zinc-900 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              localhost:7890
-            </div>
-            <p className="mt-2 text-xs text-zinc-500">
-              Ryve Headless Node Daemon REST API
             </p>
           </div>
         </div>
@@ -284,7 +263,7 @@ export function DashboardView() {
                       {/* Capacity */}
                       <td className="py-3.5 px-4">
                         <span className="font-mono font-bold text-zinc-950 text-sm">
-                          {node.capacityGb >= 1000 ? `${(node.capacityGb / 1000).toFixed(1)} TB` : `${node.capacityGb} GB`}
+                          {node.capacityGb >= 1000 ? `${(node.capacityGb / 1000).toFixed(2)} TB` : `${node.capacityGb} GB`}
                         </span>
                       </td>
 
@@ -344,7 +323,7 @@ export function DashboardView() {
                             <button
                               onClick={() => {
                                 setResizingNode(node);
-                                setNewCapacityGb(node.capacityGb + 5);
+                                setNewCapacityGb(Number((node.capacityGb + 0.5).toFixed(1)));
                               }}
                               className="px-2.5 py-1 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-lg text-[11px] font-semibold text-zinc-800 hover:text-zinc-950 transition-colors flex items-center gap-1 cursor-pointer"
                               title="Upgrade / Resize Network Capacity"
@@ -410,21 +389,22 @@ export function DashboardView() {
                 </label>
                 <input
                   type="number"
-                  min={resizingNode.capacityGb + 1}
+                  step="0.1"
+                  min={Number((resizingNode.capacityGb + 0.1).toFixed(1))}
                   required
                   value={newCapacityGb}
-                  onChange={(e) => setNewCapacityGb(Math.max(1, parseInt(e.target.value) || 0))}
+                  onChange={(e) => setNewCapacityGb(Math.max(0.1, parseFloat(e.target.value) || 0))}
                   className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900"
                 />
-                <div className="flex gap-2 mt-2">
-                  {[resizingNode.capacityGb + 5, resizingNode.capacityGb + 10, resizingNode.capacityGb + 25].map((g) => (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {[0.5, 1, 2, 5].map((inc) => (
                     <button
                       type="button"
-                      key={g}
-                      onClick={() => setNewCapacityGb(g)}
+                      key={inc}
+                      onClick={() => setNewCapacityGb(Number((resizingNode.capacityGb + inc).toFixed(1)))}
                       className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-mono rounded-lg transition-colors cursor-pointer"
                     >
-                      +{g - resizingNode.capacityGb} GB
+                      +{inc} GB
                     </button>
                   ))}
                 </div>
@@ -484,8 +464,11 @@ export function DashboardView() {
               Are you sure you want to disconnect this node from the swarm network? The node daemon will decommission this storage allocation.
             </p>
 
-            <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200/80 text-[11px] text-zinc-500 font-mono">
-              API: POST http://localhost:7890/api/v1/node/leave-network
+            <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200/80 space-y-1">
+              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">Network Address</span>
+              <span className="text-[11px] text-zinc-700 font-mono break-all block" title={leavingNode.networkAddress}>
+                {leavingNode.networkAddress || leavingNode.networkId || leavingNode.id.substring(0, 12)}
+              </span>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">

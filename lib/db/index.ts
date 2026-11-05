@@ -47,7 +47,7 @@ export async function ensureTables() {
       CREATE TABLE IF NOT EXISTS nodes (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         organization_id uuid,
-        capacity_gb integer NOT NULL DEFAULT 100,
+        capacity_gb double precision NOT NULL DEFAULT 1,
         network_address text NOT NULL DEFAULT '127.0.0.1:9000',
         duration_months integer NOT NULL DEFAULT 1,
         purchased_at timestamptz NOT NULL DEFAULT now(),
@@ -58,7 +58,10 @@ export async function ensureTables() {
     `);
 
     await db.execute(sql`
-      ALTER TABLE nodes ADD COLUMN IF NOT EXISTS capacity_gb integer;
+      ALTER TABLE nodes ADD COLUMN IF NOT EXISTS capacity_gb double precision;
+    `);
+    await db.execute(sql`
+      ALTER TABLE nodes ALTER COLUMN capacity_gb TYPE double precision;
     `);
     await db.execute(sql`
       ALTER TABLE nodes ADD COLUMN IF NOT EXISTS network_address text;

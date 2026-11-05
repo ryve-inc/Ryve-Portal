@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     // 1. JOIN NETWORK: POST /api/v1/node/join-network
     // =========================================================================
     if (action === 'join') {
-      const allocatedGb = Math.max(1, Number(body.allocatedGb) || 5);
+      const allocatedGb = Math.max(0.1, parseFloat(body.allocatedGb) || 0.5);
       const durationMonths = Math.max(1, Number(body.durationMonths) || 1);
       const name = String(body.name || user.name || 'Customer-Acme').trim();
 
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
     // =========================================================================
     if (action === 'upgrade' || action === 'resize') {
       const { nodeId, networkId, allocatedGb } = body;
-      const newGb = Math.max(1, Number(allocatedGb) || 10);
+      const newGb = Math.max(0.1, parseFloat(allocatedGb) || 1);
 
       // Call daemon API
       let daemonMsg = '';
@@ -248,15 +248,21 @@ export async function POST(request: Request) {
     // 3. LEAVE NETWORK: POST /api/v1/node/leave-network
     // =========================================================================
     if (action === 'leave') {
-      const { nodeId, networkId } = body;
+      const { nodeId, networkId, networkAddress } = body;
+
+      // The daemon expects the full p2p-drive:// networkLink, not just the short networkId.
+      // networkAddress stores the original p2p link used when joining.
+      const networkLink = (networkAddress && networkAddress.startsWith('p2p-drive://'))
+        ? networkAddress
+        : networkId || '';
 
       // Call daemon API
       let daemonMsg = '';
-      if (networkId) {
+      if (networkLink) {
         const daemonRes = await callDaemon('/api/v1/node/leave-network', {
           method: 'POST',
           body: JSON.stringify({
-            networkId,
+            networkId: networkLink,
           }),
         });
         daemonMsg = daemonRes.data?.message || '';

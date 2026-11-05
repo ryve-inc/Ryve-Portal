@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
 
 // ==============================================================================
 // 1. BETTER AUTH CORE SCHEMA (User, Session, Account, Verification)
@@ -72,7 +72,7 @@ export const nodes = pgTable('nodes', {
   organizationId: uuid('organization_id')
     .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
-  capacityGb: integer('capacity_gb').notNull(),
+  capacityGb: doublePrecision('capacity_gb').notNull(),
   networkAddress: text('network_address').notNull(),
   networkId: text('network_id'),
   durationMonths: integer('duration_months').notNull().default(1),

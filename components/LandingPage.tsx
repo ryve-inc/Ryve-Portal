@@ -28,18 +28,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onEnterDashboard }: LandingPageProps) {
   const { data: session } = useSession();
-  const [capacitySlider, setCapacitySlider] = useState(10);
-  const [copiedInstall, setCopiedInstall] = useState(false);
 
-  // Pricing calculations
-  const ryveMonthly = capacitySlider * 4;
-  const awsS3Monthly = Math.round(capacitySlider * 23 + capacitySlider * 0.25 * 90); // $23/TB storage + 25% egress at $0.09/GB
-
-  const handleCopyInstall = () => {
-    copyToClipboard('curl -sSL https://get.ryve.io | sh');
-    setCopiedInstall(true);
-    setTimeout(() => setCopiedInstall(false), 2000);
-  };
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans selection:bg-emerald-100 selection:text-emerald-950">
@@ -128,30 +117,6 @@ export function LandingPage({ onEnterDashboard }: LandingPageProps) {
           >
             <span>Sign In to Portal</span>
           </Link>
-        </div>
-
-        {/* Terminal Quickstart Snippet */}
-        <div className="mt-10 w-full max-w-xl bg-zinc-950 text-zinc-200 rounded-xl p-3.5 border border-zinc-800 shadow-xl flex items-center justify-between text-left font-mono text-xs">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <span className="text-emerald-400 select-none">$</span>
-            <span className="text-zinc-300 truncate">curl -sSL https://get.ryve.io | sh</span>
-          </div>
-          <button
-            onClick={handleCopyInstall}
-            className="ml-3 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-          >
-            {copiedInstall ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3 text-zinc-400" />
-                <span>Copy</span>
-              </>
-            )}
-          </button>
         </div>
 
         {/* Highlight Badges */}
@@ -356,56 +321,6 @@ export function LandingPage({ onEnterDashboard }: LandingPageProps) {
             <p className="text-sm text-zinc-600 mt-2">
               No hidden egress penalties. No API request surcharges.
             </p>
-          </div>
-
-          <div className="p-8 bg-white border border-zinc-200 rounded-2xl shadow-sm flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between">
-                <label className="text-sm font-semibold text-zinc-800">
-                  Select Required Dedicated Capacity:
-                </label>
-                <span className="text-xl font-bold font-mono text-zinc-950">{capacitySlider} TB</span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="50"
-                value={capacitySlider}
-                onChange={(e) => setCapacitySlider(parseInt(e.target.value) || 1)}
-                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-950"
-              />
-              <div className="flex justify-between text-[11px] text-zinc-400 font-mono">
-                <span>1 TB</span>
-                <span>25 TB</span>
-                <span>50 TB</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
-              <div className="p-5 bg-emerald-50/60 rounded-xl border border-emerald-200 flex flex-col justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-emerald-800 uppercase font-semibold">Ryve Managed Storage</span>
-                  <div className="text-3xl font-extrabold font-mono text-emerald-950 mt-1">
-                    ${ryveMonthly} <span className="text-xs font-normal text-emerald-700">/ month</span>
-                  </div>
-                </div>
-                <div className="text-[11px] text-emerald-800 mt-3 font-mono">
-                  $4.00/TB • Zero egress fees • RS 8+4 included
-                </div>
-              </div>
-
-              <div className="p-5 bg-zinc-50 rounded-xl border border-zinc-200 flex flex-col justify-between opacity-80">
-                <div>
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase font-semibold">Traditional Cloud (AWS S3)</span>
-                  <div className="text-3xl font-extrabold font-mono text-zinc-600 mt-1">
-                    ~${awsS3Monthly} <span className="text-xs font-normal text-zinc-500">/ month</span>
-                  </div>
-                </div>
-                <div className="text-[11px] text-zinc-500 mt-3 font-mono">
-                  $23/TB storage + $0.09/GB egress fees
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
