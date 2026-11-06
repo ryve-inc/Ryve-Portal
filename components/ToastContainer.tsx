@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRyve } from '@/lib/store';
+import { useRyve } from '@/context/store';
 import { CheckCircle2, AlertCircle, Info, XCircle, X } from 'lucide-react';
 
 export function ToastContainer() {
@@ -14,30 +14,30 @@ export function ToastContainer() {
       {toasts.map((toast) => {
         const icon =
           toast.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-[#FF6B50] shrink-0 mt-0.5" />
           ) : toast.type === 'warning' ? (
-            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           ) : toast.type === 'error' ? (
-            <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+            <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
           ) : (
-            <Info className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
+            <Info className="w-5 h-5 text-white shrink-0 mt-0.5" />
           );
 
         return (
           <div
             key={toast.id}
-            className="pointer-events-auto flex items-start gap-3 p-4 bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-lg shadow-xl shadow-black/40 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
+            className="pointer-events-auto flex items-start gap-3 p-4 bg-[#111111] border border-[#2a2a2a] text-[#ebebeb] rounded-2xl shadow-2xl shadow-black/90 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 backdrop-blur-md"
           >
             {icon}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold tracking-tight text-white">{toast.title}</p>
+              <p className="text-sm font-black tracking-tight text-white">{toast.title}</p>
               {toast.description && (
-                <p className="text-xs text-zinc-400 mt-0.5 break-words font-mono">{toast.description}</p>
+                <p className="text-xs text-[#888888] mt-1 wrap-break-word font-mono leading-relaxed">{toast.description}</p>
               )}
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-zinc-500 hover:text-zinc-300 p-1 -mr-1 -mt-1 rounded hover:bg-zinc-800 transition-colors"
+              className="text-[#666666] hover:text-white p-1 -mr-1 -mt-1 rounded-lg hover:bg-[#1a1a1a] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>

@@ -1,26 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
 import { 
   Server, 
   HardDrive, 
   ShieldCheck, 
-  Zap, 
-  ArrowRight, 
-  Check, 
+  Globe, 
+  ArrowUpRight, 
   Terminal, 
   Layers, 
   Lock, 
-  Globe, 
-  Cpu, 
-  Sparkles,
+  ArrowRight,
   Activity,
-  CheckCircle2,
-  Copy
+  Cpu,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
-import { copyToClipboard } from '@/lib/format';
 
 interface LandingPageProps {
   onEnterDashboard?: () => void;
@@ -29,345 +26,459 @@ interface LandingPageProps {
 export function LandingPage({ onEnterDashboard }: LandingPageProps) {
   const { data: session } = useSession();
 
-
   return (
-    <div className="min-h-screen bg-white text-zinc-950 font-sans selection:bg-emerald-100 selection:text-emerald-950">
-      {/* Top Header */}
-      <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-zinc-200/80 px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-bold text-sm tracking-widest shadow-xs">
-            RY
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-base tracking-tight text-zinc-950 flex items-center gap-1.5">
-              <span>Ryve</span>
-              <span className="text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">
-                P2P FABRIC
-              </span>
+    <div className="min-h-screen bg-[#050505] text-[#ebebeb] selection-coral overflow-x-hidden font-sans">
+      
+      {/* Top Glass Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-100 px-6 md:px-12 py-5 flex items-center justify-between text-sm font-medium tracking-tight glass-nav">
+        <div className="flex items-center gap-10">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center text-black font-extrabold text-xl transition-transform group-hover:rotate-12 shadow-sm">
+              R.
+            </div>
+            <span className="font-bold tracking-tight text-white text-base hidden sm:inline-block">
+              Ryve
             </span>
+          </Link>
+          
+          <div className="hidden lg:flex items-center gap-8 text-[#888888] text-xs font-mono uppercase tracking-wider">
+            <a href="#about" className="hover:text-white transition-colors">Architecture</a>
+            <a href="#protocol" className="hover:text-white transition-colors">Protocol</a>
+            <a href="#storage" className="hover:text-white transition-colors">Nodes</a>
+            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
           </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-600">
-          <a href="#how-it-works" className="hover:text-zinc-950 transition-colors">How It Works</a>
-          <a href="#architecture" className="hover:text-zinc-950 transition-colors">Architecture</a>
-          <a href="#storage-model" className="hover:text-zinc-950 transition-colors">Self-Hosted vs Managed</a>
-          <a href="#pricing" className="hover:text-zinc-950 transition-colors">Pricing</a>
-          <a href="#security" className="hover:text-zinc-950 transition-colors">Security</a>
-        </nav>
+        <div className="flex items-center gap-5">
+          <span className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#111111] border border-[#222222] text-[11px] font-mono text-[#888888]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B50] animate-pulse"></span>
+            SWARM v1.4
+          </span>
 
-        <div className="flex items-center gap-2.5">
           {session ? (
             <button
               onClick={onEnterDashboard}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-md text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2.5 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-bold text-xs tracking-wider uppercase rounded-xl transition-all duration-300 shadow-md cursor-pointer flex items-center gap-1.5"
             >
-              <span>Go to Control Panel</span>
+              <span>Control Panel</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:text-zinc-950 transition-colors"
+                className="hidden sm:block text-[#888888] hover:text-white text-xs font-medium transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="px-3.5 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-md text-xs font-semibold shadow-xs transition-colors"
+                className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-white hover:text-black border border-[#333333] text-white text-xs font-semibold rounded-xl transition-all duration-300"
               >
                 Get Started
               </Link>
-            </>
+            </div>
           )}
         </div>
-      </header>
+      </nav>
 
-      {/* Hero Section */}
-      <section className="relative px-6 pt-20 pb-20 max-w-6xl mx-auto flex flex-col items-center text-center">
-        {/* Release Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-200 bg-zinc-50 text-xs font-mono text-zinc-700 mb-8 shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Ryve Fabric Protocol v1.4</span>
-          <span className="text-zinc-300">|</span>
-          <span className="text-emerald-700 font-semibold">$0 Egress Fees</span>
+      {/* Floating Bottom Navigation Bar */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-110 hidden md:flex items-center gap-2 p-2 glass-nav rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-1 pr-4 border-r border-[#333333]">
+          <a href="#about" className="p-3 hover:bg-[#222222] text-[#888888] hover:text-white rounded-xl transition-all" title="Architecture">
+            <Layers className="w-4 h-4" />
+          </a>
+          <a href="#protocol" className="p-3 hover:bg-[#222222] text-[#888888] hover:text-white rounded-xl transition-all" title="Protocol">
+            <Cpu className="w-4 h-4" />
+          </a>
+          <a href="#storage" className="p-3 hover:bg-[#222222] text-[#888888] hover:text-white rounded-xl transition-all" title="Nodes">
+            <HardDrive className="w-4 h-4" />
+          </a>
+          <a href="#contact" className="p-3 hover:bg-[#222222] text-[#888888] hover:text-white rounded-xl transition-all" title="Contact">
+            <Globe className="w-4 h-4" />
+          </a>
         </div>
-
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-950 max-w-4xl leading-[1.12]">
-          The Distributed P2P Cloud Storage Fabric for Modern Infrastructure.
-        </h1>
-
-        <p className="mt-6 text-base sm:text-lg text-zinc-600 max-w-2xl leading-relaxed">
-          Transform your self-hosted servers, homelabs, and datacenter NVMe pods into a unified, zero-knowledge S3-compatible cloud. Fully private, zero egress penalties, and mathematically guaranteed redundancy.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
+        {session ? (
+          <button 
+            onClick={onEnterDashboard}
+            className="px-6 py-3 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-extrabold text-xs tracking-wider uppercase rounded-xl transition-all cursor-pointer"
+          >
+            Dashboard
+          </button>
+        ) : (
           <Link
             href="/signup"
-            className="w-full sm:w-auto px-6 py-3 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-zinc-950/10 transition-all hover:scale-[1.02] cursor-pointer"
+            className="px-6 py-3 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-extrabold text-xs tracking-wider uppercase rounded-xl transition-all cursor-pointer"
           >
-            <span>Create Organization Free</span>
-            <ArrowRight className="w-4 h-4 text-zinc-400" />
+            Join Mesh
           </Link>
-          <Link
-            href="/login"
-            className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <span>Sign In to Portal</span>
-          </Link>
+        )}
+      </div>
+
+      {/* Hero Section */}
+      <header className="relative min-h-screen w-full flex flex-col items-center justify-center pt-24 pb-16 px-6">
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#201514_0%,#050505_70%)] opacity-50"></div>
         </div>
 
-        {/* Highlight Badges */}
-        <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-4xl text-left">
-          <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-xl">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-950">11 9&apos;s</div>
-            <div className="text-xs font-semibold text-zinc-900 mt-1">Durability SLA</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">Reed-Solomon (8+4) erasure</div>
-          </div>
-          <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-xl">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600">$0.00</div>
-            <div className="text-xs font-semibold text-zinc-900 mt-1">Egress Surcharges</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">Free unlimited downloads</div>
-          </div>
-          <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-xl">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-950">&lt; 15 ms</div>
-            <div className="text-xs font-semibold text-zinc-900 mt-1">Gossip Telemetry</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">SWIM failure detection</div>
-          </div>
-          <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-xl">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-950">Zero-Knowl.</div>
-            <div className="text-xs font-semibold text-zinc-900 mt-1">AES-256-GCM</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">Client-side sharded keys</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Architecture / How it Works */}
-      <section id="how-it-works" className="py-20 bg-zinc-50/70 border-t border-b border-zinc-200/80 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col gap-12">
-          <div className="text-center max-w-xl mx-auto">
-            <span className="text-xs font-mono font-semibold text-emerald-700 uppercase tracking-widest">
-              Distributed Mesh Architecture
+        <div className="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#FF6B50] animate-pulse"></span>
+            <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#888888] uppercase">
+              Distributed P2P Storage Mesh
             </span>
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-950 mt-2">
-              Engineered for Sovereign, Zero-Knowledge Storage
-            </h2>
-            <p className="text-sm text-zinc-600 mt-2">
-              Every file is encrypted client-side, sliced into erasure shards, and distributed across independent physical nodes.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white border border-zinc-200 rounded-xl shadow-xs flex flex-col">
-              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-900 mb-4">
-                <Server className="w-5 h-5 text-emerald-600" />
-              </div>
-              <h3 className="text-base font-bold text-zinc-950">1. Instant Node Enrollment</h3>
-              <p className="text-xs text-zinc-600 mt-2 leading-relaxed flex-1">
-                Run our lightweight binary on any Linux server, Raspberry Pi cluster, or cloud VM. Nodes self-discover and establish encrypted WireGuard peer links automatically.
-              </p>
-              <div className="mt-4 pt-4 border-t border-zinc-100 text-[11px] font-mono text-zinc-400">
-                SWIM Gossip Protocol
-              </div>
-            </div>
+          <h1 className="hero-text font-black text-white text-center select-none uppercase tracking-tighter">
+            RYVE
+          </h1>
 
-            <div className="p-6 bg-white border border-zinc-200 rounded-xl shadow-xs flex flex-col">
-              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-900 mb-4">
-                <Layers className="w-5 h-5 text-emerald-600" />
-              </div>
-              <h3 className="text-base font-bold text-zinc-950">2. Reed-Solomon Erasure</h3>
-              <p className="text-xs text-zinc-600 mt-2 leading-relaxed flex-1">
-                Data is encoded with 8 data shards + 4 parity shards. Up to 4 physical nodes can suffer simultaneous catastrophic failure without losing a single byte of data.
-              </p>
-              <div className="mt-4 pt-4 border-t border-zinc-100 text-[11px] font-mono text-zinc-400">
-                11 9s Theoretical Durability
-              </div>
-            </div>
-
-            <div className="p-6 bg-white border border-zinc-200 rounded-xl shadow-xs flex flex-col">
-              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-900 mb-4">
-                <Globe className="w-5 h-5 text-emerald-600" />
-              </div>
-              <h3 className="text-base font-bold text-zinc-950">3. Drop-in S3 Gateway</h3>
-              <p className="text-xs text-zinc-600 mt-2 leading-relaxed flex-1">
-                Point existing applications, backups, and S3 SDKs directly to your Ryve cluster endpoint. No code refactoring or proprietary vendor lock-in required.
-              </p>
-              <div className="mt-4 pt-4 border-t border-zinc-100 text-[11px] font-mono text-zinc-400">
-                100% S3-API Compatible
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Storage Models: Free vs Managed */}
-      <section id="storage-model" className="py-20 px-6 max-w-5xl mx-auto">
-        <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="text-xs font-mono font-semibold text-emerald-700 uppercase tracking-widest">
-            Flexible Deployment
-          </span>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-950 mt-2">
-            Bring Your Own Nodes or Provision Ryve Pods
-          </h2>
-          <p className="text-sm text-zinc-600 mt-2">
-            Mix and match self-hosted hardware with high-performance datacenter nodes seamlessly in the same storage network.
+          <p className="mt-8 text-base md:text-xl text-[#888888] max-w-2xl font-normal leading-relaxed">
+            Transform self-hosted hardware, edge servers, and NVMe pods into a sovereign, zero-knowledge cloud with zero egress fees and Reed-Solomon redundancy.
           </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Model 1: Free Self-Hosted */}
-          <div className="p-8 bg-white border border-zinc-200 rounded-2xl shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-semibold px-2.5 py-1 bg-zinc-100 text-zinc-700 rounded-md">
-                  Community & Self-Hosted
-                </span>
-                <span className="text-xs font-bold text-emerald-600 uppercase font-mono">100% Free</span>
-              </div>
-
-              <h3 className="text-2xl font-bold text-zinc-950 mt-4">Self-Hosted Storage Nodes</h3>
-              <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                Connect your existing servers, NAS devices, or homelabs. Retain complete hardware custody with zero subscription or storage charges.
-              </p>
-
-              <ul className="mt-6 space-y-3 text-xs text-zinc-700">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Unlimited self-hosted nodes and total capacity</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Full control plane and node gossip health metrics</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Client-side AES-256-GCM zero-knowledge encryption</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Complete S3 compatibility with API access tokens</span>
-                </li>
-              </ul>
-            </div>
-
+          <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
             <Link
-              href="/signup"
-              className="mt-8 w-full py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold transition-colors text-center block"
+              href={session ? "#" : "/signup"}
+              onClick={session ? onEnterDashboard : undefined}
+              className="w-full sm:w-auto px-8 py-4 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-extrabold text-sm tracking-wider uppercase rounded-xl shadow-lg shadow-[#FF6B50]/15 transition-all hover:scale-[1.02] cursor-pointer"
             >
-              Start Self-Hosting Free
+              {session ? 'Enter Control Plane' : 'Deploy Storage Nodes Free'}
             </Link>
-          </div>
 
-          {/* Model 2: Dedicated Ryve NVMe */}
-          <div className="p-8 bg-zinc-950 text-white border border-zinc-800 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/30">
-                Enterprise SLA
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-mono font-semibold text-emerald-400">
-                Dedicated NVMe Infrastructure
-              </span>
-
-              <h3 className="text-2xl font-bold text-white mt-4">Ryve-Provided Storage Pods</h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Need guaranteed datacenter bandwidth and 99.99% uptime? Provision dedicated enterprise NVMe storage pods directly in your network.
-              </p>
-
-              <ul className="mt-6 space-y-3 text-xs text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Enterprise Gen4 NVMe arrays with 10 Gbps uplinks</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Geographic distribution across North America & Europe</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Strictly zero egress fees ($0 / GB download)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Flat $4.00 / TB / month predictable billing</span>
-                </li>
-              </ul>
-            </div>
-
-            <Link
-              href="/signup"
-              className="mt-8 w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition-colors text-center block"
-            >
-              Deploy Dedicated Pods
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Calculator */}
-      <section id="pricing" className="py-20 bg-zinc-50/70 border-t border-b border-zinc-200/80 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col gap-10">
-          <div className="text-center">
-            <span className="text-xs font-mono font-semibold text-emerald-700 uppercase tracking-widest">
-              Cost Economics
-            </span>
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-950 mt-2">
-              Predictable, Transparent Storage Economics
-            </h2>
-            <p className="text-sm text-zinc-600 mt-2">
-              No hidden egress penalties. No API request surcharges.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA Banner */}
-      <section className="py-20 px-6 max-w-4xl mx-auto text-center">
-        <div className="p-10 bg-zinc-950 text-white rounded-3xl shadow-xl border border-zinc-800 relative overflow-hidden">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Ready to orchestrate your sovereign storage cloud?
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-3 max-w-md mx-auto leading-relaxed">
-            Register your organization in under 60 seconds. Enroll existing hardware or provision high-speed NVMe nodes instantly.
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/signup"
-              className="px-6 py-3 bg-white text-zinc-950 hover:bg-zinc-100 rounded-xl text-xs font-semibold transition-all shadow-md"
-            >
-              Create Account Free
-            </Link>
             <Link
               href="/login"
-              className="px-6 py-3 bg-zinc-900 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold transition-colors border border-zinc-800"
+              className="w-full sm:w-auto px-8 py-4 bg-[#141414] hover:bg-white hover:text-black border border-[#2a2a2a] text-[#ebebeb] text-sm font-semibold rounded-xl transition-all"
             >
               Sign In to Organization
             </Link>
           </div>
         </div>
+
+        {/* Bottom UI Overlays */}
+        <div className="w-full max-w-7xl mx-auto mt-20 pt-10 border-t border-[#1a1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 z-10 text-xs font-mono text-[#888888]">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <span>HYPERSWARM P2P FABRIC ONLINE</span>
+            <span className="text-[#333333]">|</span>
+            <span className="text-white font-semibold">REED-SOLOMON (8+4)</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <span>$0 EGRESS PENALTIES</span>
+            <span className="text-[#333333]">|</span>
+            <span className="text-[#FF6B50] font-bold">100% PRIVATE</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Benefits Section */}
+      <section id="about" className="py-32 px-6 md:px-12 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-2 h-2 rounded-full bg-[#FF6B50] animate-pulse"></div>
+          <span className="text-[10px] font-bold tracking-[0.3em] text-[#888888] uppercase">
+            Why pay cloud egress when you can own the mesh?
+          </span>
+        </div>
+
+        <h2 className="text-4xl md:text-7xl font-medium leading-[1.05] tracking-tight text-white max-w-5xl mb-20">
+          Clean, sovereign storage that helps you <span className="text-[#555555]">ship faster</span> and eliminate cloud bandwidth taxes.
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Benefit Card 1 */}
+          <div className="bg-[#111111] rounded-[2.5rem] p-10 md:p-14 min-h-125 flex flex-col justify-between relative overflow-hidden group hover:bg-[#151515] transition-all duration-500 border border-[#222222]">
+            <div className="flex items-center justify-between">
+              <span className="bg-[#1a1a1a] text-[10px] font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest text-[#FF6B50] border border-[#333333]">
+                Zero-Egress SLA
+              </span>
+              <span className="text-xs font-mono text-[#666666]">11 9s Durability</span>
+            </div>
+            
+            <div className="mt-20">
+              <h3 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-2 text-white">
+                Start faster.
+              </h3>
+              <h3 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-[#333333] group-hover:text-[#666666] transition-colors">
+                Store forever.
+              </h3>
+              <p className="mt-6 text-sm text-[#888888] font-normal leading-relaxed max-w-md">
+                Encrypted erasure chunks are distributed over Hyperswarm P2P links. Even if 4 physical nodes go offline at once, every byte remains immediately readable.
+              </p>
+            </div>
+          </div>
+
+          {/* Benefit Card 2 */}
+          <div className="bg-linear-to-br from-[#1a162b] to-[#120d20] border border-[#2b2440] rounded-[2.5rem] p-8 md:p-12 min-h-125 flex items-center justify-center relative overflow-hidden group">
+            {/* Terminal / Browser Mockup Representation */}
+            <div className="w-full max-w-md bg-[#0a0a0a] rounded-2xl shadow-2xl overflow-hidden border border-[#2a243d] transform group-hover:scale-[1.02] transition-transform duration-700 ease-out font-mono">
+              <div className="bg-[#14101e] px-4 py-3 border-b border-[#2a243d] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                </div>
+                <span className="text-[10px] text-[#888888]">daemon: p2p://node-core</span>
+              </div>
+              <div className="p-6 text-xs space-y-3">
+                <div className="text-[#FF6B50] font-bold">
+                  $ ryve-node-daemon --status
+                </div>
+                <div className="text-white font-semibold">
+                  [NodeStatus] ONLINE (Unlocked)
+                </div>
+                <div className="text-[#888888]">
+                  Swarm Topic: <span className="text-[#ebebeb]">22863cbf985b32a1...</span>
+                </div>
+                <div className="text-[#888888]">
+                  Storage Mode: <span className="text-[#ebebeb]">RS(8+4) Erasure Shards</span>
+                </div>
+                <div className="p-3 bg-[#110e19] rounded-xl border border-[#251e36] text-[11px] text-white flex items-center justify-between">
+                  <span>Quota Allocated:</span>
+                  <span className="text-[#FF6B50] font-bold">Dedicated Pod</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 border-t border-zinc-200">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-zinc-950 text-white flex items-center justify-center font-bold text-[10px]">
-            RY
+      {/* Protocol Architecture / Selected Capabilities */}
+      <section id="protocol" className="py-32 px-6 md:px-12 max-w-7xl mx-auto border-t border-[#1a1a1a]">
+        <div className="flex justify-between items-end mb-20 border-b border-[#222222] pb-10">
+          <div>
+            <h2 className="text-xs font-bold tracking-[0.4em] uppercase text-[#FF6B50]">Protocol Capabilities</h2>
+            <p className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-2">Engineered for absolute hardware custody.</p>
           </div>
-          <span className="font-semibold text-zinc-900">Ryve Protocol</span>
-          <span>© 2026 Ryve Inc. All rights reserved.</span>
+          <span className="hidden md:block text-[#555555] text-xs font-mono uppercase tracking-widest">SPECIFICATION v1.4</span>
         </div>
 
-        <div className="flex items-center gap-6">
-          <Link href="/login" className="hover:text-zinc-900 transition-colors">Sign In</Link>
-          <Link href="/signup" className="hover:text-zinc-900 transition-colors">Sign Up</Link>
-          <a href="#architecture" className="hover:text-zinc-900 transition-colors">Protocol Spec</a>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
+          
+          {/* Capability 1 */}
+          <article className="group cursor-pointer">
+            <div className="aspect-video overflow-hidden bg-[#111111] rounded-2xl border border-[#222222] p-8 flex flex-col justify-between group-hover:border-[#333333] transition-all">
+              <div className="flex items-center justify-between text-xs font-mono text-[#888888]">
+                <span>01 / FABRIC</span>
+                <span className="text-[#FF6B50]">SWIM GOSSIP</span>
+              </div>
+              <div>
+                <Server className="w-10 h-10 text-white mb-4" />
+                <h4 className="text-xl font-bold text-white">Instant Self-Discovery</h4>
+                <p className="text-xs text-[#888888] mt-2 leading-relaxed">Nodes automatically peer over encrypted WireGuard links with sub-15ms failure detection.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight mb-1 text-white group-hover:text-[#FF6B50] transition-colors">HYPERSWARM DHT</h3>
+                <p className="text-[#666666] text-[10px] font-bold uppercase tracking-[0.2em]">P2P Holepunching & Peer Discovery</p>
+              </div>
+              <div className="p-3 rounded-full border border-[#333333] group-hover:bg-[#FF6B50] group-hover:text-black group-hover:border-transparent transition-all duration-300">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </article>
+
+          {/* Capability 2 */}
+          <article className="group cursor-pointer md:mt-16">
+            <div className="aspect-video overflow-hidden bg-[#111111] rounded-2xl border border-[#222222] p-8 flex flex-col justify-between group-hover:border-[#333333] transition-all">
+              <div className="flex items-center justify-between text-xs font-mono text-[#888888]">
+                <span>02 / DURABILITY</span>
+                <span className="text-emerald-400">11 9s SLA</span>
+              </div>
+              <div>
+                <ShieldCheck className="w-10 h-10 text-white mb-4" />
+                <h4 className="text-xl font-bold text-white">Reed-Solomon Erasure Coding</h4>
+                <p className="text-xs text-[#888888] mt-2 leading-relaxed">8 data shards + 4 parity shards guarantee survival across multi-datacenter catastrophic failure.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight mb-1 text-white group-hover:text-[#FF6B50] transition-colors">CHUNKSTORE REPAIR</h3>
+                <p className="text-[#666666] text-[10px] font-bold uppercase tracking-[0.2em]">Autonomous Swarm Self-Healing</p>
+              </div>
+              <div className="p-3 rounded-full border border-[#333333] group-hover:bg-[#FF6B50] group-hover:text-black group-hover:border-transparent transition-all duration-300">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </article>
+
+          {/* Capability 3 */}
+          <article className="group cursor-pointer">
+            <div className="aspect-video overflow-hidden bg-[#111111] rounded-2xl border border-[#222222] p-8 flex flex-col justify-between group-hover:border-[#333333] transition-all">
+              <div className="flex items-center justify-between text-xs font-mono text-[#888888]">
+                <span>03 / ENCRYPTION</span>
+                <span className="text-purple-400">CHACHA20-POLY1305</span>
+              </div>
+              <div>
+                <Lock className="w-10 h-10 text-white mb-4" />
+                <h4 className="text-xl font-bold text-white">Zero-Knowledge Sovereign Keys</h4>
+                <p className="text-xs text-[#888888] mt-2 leading-relaxed">Encryption occurs on your client machine before shards are distributed. No intermediary can decrypt your payloads.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight mb-1 text-white group-hover:text-[#FF6B50] transition-colors">SOVEREIGN STORAGE</h3>
+                <p className="text-[#666666] text-[10px] font-bold uppercase tracking-[0.2em]">End-to-End Cryptographic Custody</p>
+              </div>
+              <div className="p-3 rounded-full border border-[#333333] group-hover:bg-[#FF6B50] group-hover:text-black group-hover:border-transparent transition-all duration-300">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </article>
+
+          {/* Capability 4 */}
+          <article className="group cursor-pointer md:mt-16">
+            <div className="aspect-video overflow-hidden bg-[#111111] rounded-2xl border border-[#222222] p-8 flex flex-col justify-between group-hover:border-[#333333] transition-all">
+              <div className="flex items-center justify-between text-xs font-mono text-[#888888]">
+                <span>04 / GATEWAY</span>
+                <span className="text-white">S3 API</span>
+              </div>
+              <div>
+                <Globe className="w-10 h-10 text-white mb-4" />
+                <h4 className="text-xl font-bold text-white">S3 Compatibility Layer</h4>
+                <p className="text-xs text-[#888888] mt-2 leading-relaxed">Drop-in compatibility with standard AWS S3 SDKs, backups, and applications without refactoring code.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight mb-1 text-white group-hover:text-[#FF6B50] transition-colors">DROP-IN S3 ACCESS</h3>
+                <p className="text-[#666666] text-[10px] font-bold uppercase tracking-[0.2em]">Zero Vendor Lock-in</p>
+              </div>
+              <div className="p-3 rounded-full border border-[#333333] group-hover:bg-[#FF6B50] group-hover:text-black group-hover:border-transparent transition-all duration-300">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      {/* Deployment Modes Section */}
+      <section id="storage" className="py-32 px-6 md:px-12 max-w-7xl mx-auto border-t border-[#1a1a1a]">
+        <div className="mb-16">
+          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FF6B50]">Deployment Models</span>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mt-2">Self-Hosted or Dedicated Pods.</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="p-10 bg-[#111111] rounded-3xl border border-[#222222] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-[#888888] uppercase">Self-Hosted Hardware</span>
+                <span className="text-xs font-mono text-emerald-400 font-bold uppercase">100% Free</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mt-4">Community & On-Prem Nodes</h3>
+              <p className="text-xs text-[#888888] mt-2 leading-relaxed">
+                Enroll existing Linux boxes, homelabs, or Raspberry Pis into your sovereign network.
+              </p>
+              <ul className="mt-6 space-y-3 text-xs text-[#bbbbbb]">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Unlimited self-hosted storage nodes</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Zero subscription or storage fees</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Full control plane and live node metrics</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              href="/signup"
+              className="mt-8 w-full py-3 bg-[#1a1a1a] hover:bg-white hover:text-black text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-center border border-[#333333]"
+            >
+              Start Free
+            </Link>
+          </div>
+
+          <div className="p-10 bg-[#16131c] rounded-3xl border border-[#322744] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-[#FF6B50] uppercase font-bold">Managed Pods</span>
+                <span className="text-xs font-mono text-[#888888]">Enterprise SLA</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mt-4">Dedicated NVMe Pods</h3>
+              <p className="text-xs text-[#a09bb0] mt-2 leading-relaxed">
+                High-performance Gen4 NVMe arrays with guaranteed 10 Gbps uplinks and zero egress fees.
+              </p>
+              <ul className="mt-6 space-y-3 text-xs text-[#d5d0e3]">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Guaranteed 99.99% uptime SLA</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Geographic multi-region redundancy</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF6B50] shrink-0" />
+                  <span>Zero egress penalties ($0/GB download)</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              href="/signup"
+              className="mt-8 w-full py-3 bg-[#FF6B50] hover:bg-[#E55A40] text-black rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-center"
+            >
+              Provision Dedicated Capacity
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Massive Editorial Footer */}
+      <footer id="contact" className="relative pt-40 pb-20 px-6 md:px-12 border-t border-[#1a1a1a]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-16">
+          <div className="flex-1">
+            <h2 className="text-[14vw] md:text-[10vw] leading-[0.85] font-black tracking-tighter text-white mb-12 select-none">
+              JOIN<br />THE MESH.
+            </h2>
+            <div className="flex flex-col gap-4">
+              <Link
+                href="/signup"
+                className="text-3xl md:text-5xl font-extrabold text-white hover:text-[#FF6B50] transition-colors w-fit flex items-center gap-3"
+              >
+                <span>Deploy your organization</span>
+                <ArrowRight className="w-8 h-8" />
+              </Link>
+              <p className="text-[#666666] text-xs font-mono">
+                Sovereign, encrypted P2P storage mesh &mdash; zero egress fees.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-4 md:mb-6">
+            <Link
+              href="/login"
+              className="px-6 py-3.5 bg-[#141414] hover:bg-white hover:text-black border border-[#2a2a2a] rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="px-6 py-3.5 bg-[#FF6B50] hover:bg-[#E55A40] text-black rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+            >
+              Sign Up Free
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto mt-32 pt-8 border-t border-[#111111] flex flex-col md:flex-row justify-between text-[#444444] text-[10px] font-mono font-bold uppercase tracking-widest">
+          <p>&copy; 2026 Ryve Network Inc. All rights reserved.</p>
+          <div className="flex gap-8 mt-4 md:mt-0">
+            <a href="#about" className="hover:text-white transition-colors">Architecture</a>
+            <a href="#protocol" className="hover:text-white transition-colors">Protocol Spec</a>
+            <Link href="/login" className="hover:text-white transition-colors">Portal</Link>
+          </div>
         </div>
       </footer>
+
     </div>
   );
 }
-

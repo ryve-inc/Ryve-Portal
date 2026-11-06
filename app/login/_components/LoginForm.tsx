@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/auth-client';
-import { useRyve } from '@/lib/store';
+import { useRyve } from '@/context/store';
 import { 
   Lock, 
   Mail, 
@@ -12,9 +12,9 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle, 
-  Loader2,
-  CheckCircle2,
-  ShieldCheck
+  Loader2, 
+  CheckCircle2, 
+  ShieldCheck 
 } from 'lucide-react';
 
 export function LoginForm() {
@@ -83,19 +83,19 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white border border-zinc-200/90 rounded-2xl shadow-xl shadow-zinc-950/5 overflow-hidden flex flex-col transition-all">
+    <div className="w-full max-w-md bg-[#111111] border border-[#242424] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col font-sans text-[#ebebeb]">
       {/* Identity Brand Header */}
-      <div className="p-8 pb-6 bg-gradient-to-b from-zinc-50/80 to-white border-b border-zinc-100 flex flex-col items-center text-center">
-        <div className="w-12 h-12 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-bold text-lg tracking-widest shadow-md shadow-zinc-950/10 mb-3 ring-4 ring-zinc-100">
-          RY
+      <div className="p-8 pb-6 bg-[#161616] border-b border-[#222222] flex flex-col items-center text-center">
+        <div className="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center font-extrabold text-xl shadow-lg mb-3">
+          R.
         </div>
 
-        <h1 className="text-xl font-bold tracking-tight text-zinc-950">
-          Sign In to Ryve Portal
+        <h1 className="text-2xl font-black tracking-tight text-white">
+          Sign In to Ryve
         </h1>
 
-        <p className="text-xs text-zinc-500 mt-1.5 max-w-xs leading-relaxed">
-          Access your distributed storage control plane, node gossip telemetry, and S3 gateway.
+        <p className="text-xs text-[#888888] mt-1.5 max-w-xs leading-relaxed font-mono">
+          Access your sovereign storage control plane and node gossip telemetry.
         </p>
       </div>
 
@@ -103,10 +103,10 @@ export function LoginForm() {
       <div className="p-8 pt-6 space-y-5">
         {/* Error Notification */}
         {errorMessage && (
-          <div className="p-3.5 bg-rose-50/90 border border-rose-200/90 rounded-xl text-xs text-rose-800 flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-rose-950/40 border border-rose-800/50 rounded-xl text-xs text-rose-300 flex items-start gap-2.5 font-mono">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div className="flex-1 leading-snug">
-              <span className="font-semibold block mb-0.5">Authentication Failed</span>
+              <span className="font-bold block mb-0.5">Authentication Failed</span>
               {errorMessage}
             </div>
           </div>
@@ -114,20 +114,20 @@ export function LoginForm() {
 
         {/* Success Notification */}
         {successMessage && (
-          <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/90 rounded-xl text-xs text-emerald-800 flex items-center gap-2.5 animate-in fade-in duration-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-medium">{successMessage}</span>
+          <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/50 rounded-xl text-xs text-emerald-300 flex items-center gap-2.5 font-mono">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-semibold">{successMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Address */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 font-mono">
               Email Address
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -137,20 +137,20 @@ export function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="operator@acme.corp"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-3.5 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
             </div>
           </div>
 
           {/* Password */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider font-mono">
                 Password
               </label>
             </div>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -160,12 +160,12 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 disabled={isLoading}
-                className="w-full pl-10 pr-10 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-10 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#666666] hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -179,13 +179,13 @@ export function LoginForm() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 accent-zinc-950 cursor-pointer"
+                className="w-4 h-4 rounded bg-[#161616] border-[#333333] accent-[#FF6B50] cursor-pointer"
               />
-              <span className="text-xs text-zinc-600 font-medium">Keep me signed in</span>
+              <span className="text-xs text-[#888888] font-mono">Remember session</span>
             </label>
-            <span className="text-[11px] text-zinc-400 font-mono flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              Better Auth v1
+            <span className="text-[10px] text-[#666666] font-mono flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#FF6B50]" />
+              Better Auth
             </span>
           </div>
 
@@ -193,31 +193,31 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold shadow-md shadow-zinc-950/10 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full mt-2 py-3.5 px-4 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-black uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-[#FF6B50]/15 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-black" />
                 <span>Authenticating Session...</span>
               </>
             ) : (
               <>
                 <span>Sign In to Dashboard</span>
-                <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
         {/* Link to Signup */}
-        <div className="pt-4 border-t border-zinc-100 text-center">
-          <p className="text-xs text-zinc-600">
+        <div className="pt-4 border-t border-[#1f1f1f] text-center">
+          <p className="text-xs text-[#777777] font-mono">
             Don&apos;t have an account?{' '}
             <Link
               href="/signup"
-              className="font-semibold text-zinc-950 hover:text-emerald-700 hover:underline transition-colors"
+              className="font-bold text-white hover:text-[#FF6B50] transition-colors"
             >
-              Create an organization account &rarr;
+              Create an organization &rarr;
             </Link>
           </p>
         </div>
@@ -225,4 +225,3 @@ export function LoginForm() {
     </div>
   );
 }
-

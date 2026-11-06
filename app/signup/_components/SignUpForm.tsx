@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signUp } from '@/lib/auth-client';
-import { useRyve } from '@/lib/store';
+import { useRyve } from '@/context/store';
 import { 
   User, 
   Lock, 
@@ -98,30 +98,30 @@ export function SignUpForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white border border-zinc-200/90 rounded-2xl shadow-xl shadow-zinc-950/5 overflow-hidden flex flex-col transition-all">
+    <div className="w-full max-w-md bg-[#111111] border border-[#242424] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col font-sans text-[#ebebeb]">
       {/* Identity Brand Header */}
-      <div className="p-8 pb-6 bg-gradient-to-b from-zinc-50/80 to-white border-b border-zinc-100 flex flex-col items-center text-center">
-        <div className="w-12 h-12 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-bold text-lg tracking-widest shadow-md shadow-zinc-950/10 mb-3 ring-4 ring-zinc-100">
-          RY
+      <div className="p-8 pb-6 bg-[#161616] border-b border-[#222222] flex flex-col items-center text-center">
+        <div className="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center font-extrabold text-xl shadow-lg mb-3">
+          R.
         </div>
 
-        <h1 className="text-xl font-bold tracking-tight text-zinc-950">
-          Create Ryve Organization
+        <h1 className="text-2xl font-black tracking-tight text-white">
+          Create Organization
         </h1>
 
-        <p className="text-xs text-zinc-500 mt-1.5 max-w-xs leading-relaxed">
+        <p className="text-xs text-[#888888] mt-1.5 max-w-xs leading-relaxed font-mono">
           Deploy zero-knowledge distributed storage, register NVMe pods, and manage node clusters.
         </p>
       </div>
 
       {/* Form Body */}
-      <div className="p-8 pt-6 space-y-5">
+      <div className="p-8 pt-6 space-y-4">
         {/* Error Notification */}
         {errorMessage && (
-          <div className="p-3.5 bg-rose-50/90 border border-rose-200/90 rounded-xl text-xs text-rose-800 flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-rose-950/40 border border-rose-800/50 rounded-xl text-xs text-rose-300 flex items-start gap-2.5 font-mono">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div className="flex-1 leading-snug">
-              <span className="font-semibold block mb-0.5">Registration Failed</span>
+              <span className="font-bold block mb-0.5">Registration Failed</span>
               {errorMessage}
             </div>
           </div>
@@ -129,20 +129,20 @@ export function SignUpForm() {
 
         {/* Success Notification */}
         {successMessage && (
-          <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/90 rounded-xl text-xs text-emerald-800 flex items-center gap-2.5 animate-in fade-in duration-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-medium">{successMessage}</span>
+          <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/50 rounded-xl text-xs text-emerald-300 flex items-center gap-2.5 font-mono">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-semibold">{successMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 font-mono">
               Full Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -152,18 +152,18 @@ export function SignUpForm() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Elena Rostova"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-3.5 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
             </div>
           </div>
 
           {/* Work Email */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 font-mono">
               Work Email
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -173,18 +173,18 @@ export function SignUpForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="elena@company.com"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-3.5 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
             </div>
           </div>
 
           {/* Organization Name */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 font-mono">
               Organization Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Building className="w-4 h-4" />
               </div>
               <input
@@ -193,18 +193,18 @@ export function SignUpForm() {
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="Acme Infrastructure (optional)"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-3.5 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
             </div>
           </div>
 
           {/* Master Password */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 font-mono">
               Master Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -214,12 +214,12 @@ export function SignUpForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 8 characters"
                 disabled={isLoading}
-                className="w-full pl-10 pr-10 py-2.5 bg-zinc-50/60 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-10 py-3 bg-[#161616] border border-[#2a2a2a] rounded-xl text-sm font-mono text-white placeholder:text-[#555555] focus:outline-none focus:border-[#FF6B50] focus:ring-1 focus:ring-[#FF6B50] transition-all disabled:opacity-60"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#666666] hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -227,12 +227,12 @@ export function SignUpForm() {
 
             {/* Password Requirement Chips */}
             {password.length > 0 && (
-              <div className="mt-2 flex items-center gap-3 text-[11px] font-mono">
-                <span className={`flex items-center gap-1 ${hasMinLength ? 'text-emerald-700 font-semibold' : 'text-zinc-400'}`}>
+              <div className="mt-2.5 flex items-center gap-3 text-[11px] font-mono">
+                <span className={`flex items-center gap-1 ${hasMinLength ? 'text-[#FF6B50] font-bold' : 'text-[#666666]'}`}>
                   <Check className={`w-3 h-3 ${hasMinLength ? 'opacity-100' : 'opacity-40'}`} />
                   8+ chars
                 </span>
-                <span className={`flex items-center gap-1 ${hasNumber ? 'text-emerald-700 font-semibold' : 'text-zinc-400'}`}>
+                <span className={`flex items-center gap-1 ${hasNumber ? 'text-[#FF6B50] font-bold' : 'text-[#666666]'}`}>
                   <Check className={`w-3 h-3 ${hasNumber ? 'opacity-100' : 'opacity-40'}`} />
                   1+ number
                 </span>
@@ -241,8 +241,8 @@ export function SignUpForm() {
           </div>
 
           {/* Privacy & Zero-Knowledge notice */}
-          <div className="p-3 bg-zinc-50 border border-zinc-200/80 rounded-xl text-[11px] text-zinc-500 leading-relaxed flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-[#161616] border border-[#242424] rounded-xl text-[11px] text-[#888888] font-mono leading-relaxed flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-[#FF6B50] shrink-0 mt-0.5" />
             <span>
               All cluster encryption keys and S3 credentials are generated with client-side zero-knowledge isolation.
             </span>
@@ -252,29 +252,29 @@ export function SignUpForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-3 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold shadow-md shadow-zinc-950/10 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full mt-2 py-3.5 px-4 bg-[#FF6B50] hover:bg-[#E55A40] text-black font-black uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-[#FF6B50]/15 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-black" />
                 <span>Creating Organization...</span>
               </>
             ) : (
               <>
                 <span>Register & Access Control Plane</span>
-                <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
         {/* Link to Login */}
-        <div className="pt-4 border-t border-zinc-100 text-center">
-          <p className="text-xs text-zinc-600">
+        <div className="pt-4 border-t border-[#1f1f1f] text-center">
+          <p className="text-xs text-[#777777] font-mono">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="font-semibold text-zinc-950 hover:text-emerald-700 hover:underline transition-colors"
+              className="font-bold text-white hover:text-[#FF6B50] transition-colors"
             >
               Sign in to your organization &rarr;
             </Link>
@@ -284,4 +284,3 @@ export function SignUpForm() {
     </div>
   );
 }
-
