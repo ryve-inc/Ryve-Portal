@@ -233,11 +233,11 @@ export function GetNodesView() {
             Get Storage Nodes
           </h1>
           <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200">
-            POST /api/v1/node/join-network
+            STORAGE ALLOCATION
           </span>
         </div>
         <p className="text-xs text-zinc-500 mt-1">
-          Join your customer network to the Ryve Managed Storage Node Daemon (localhost:7890) and provision dedicated capacity.
+          Join your customer network to the Ryve Managed Storage Node Daemon and provision dedicated capacity.
         </p>
       </div>
 

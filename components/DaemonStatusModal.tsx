@@ -56,11 +56,11 @@ export function DaemonStatusModal({ isOpen, onClose }: DaemonStatusModalProps) {
                     : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`}></span>
-                  {isOnline ? 'ONLINE' : 'OFFLINE (7890)'}
+                  {isOnline ? 'ONLINE' : 'OFFLINE'}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5 font-mono">
-                REST API: http://localhost:7890
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Managed P2P Storage Mesh Node
               </p>
             </div>
           </div>

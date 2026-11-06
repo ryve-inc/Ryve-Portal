@@ -104,7 +104,7 @@ export function DashboardView() {
           <button
             onClick={() => checkDaemonHealth()}
             disabled={isDaemonChecking}
-            title="Check Node Daemon Health (GET /health)"
+            title="Check Node Daemon Health"
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-800 shadow-2xs transition-colors cursor-pointer"
           >
             <Activity className="w-3.5 h-3.5 text-emerald-600" />
@@ -116,7 +116,7 @@ export function DashboardView() {
               setIsStatusModalOpen(true);
               getDaemonStatus();
             }}
-            title="View Daemon Status (GET /api/v1/node/status)"
+            title="View Daemon Status"
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-800 shadow-2xs transition-colors cursor-pointer"
           >
             <Server className="w-3.5 h-3.5 text-zinc-700" />
@@ -410,8 +410,11 @@ export function DashboardView() {
                 </div>
               </div>
 
-              <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200/80 text-[11px] text-zinc-500 font-mono">
-                API: POST http://localhost:7890/api/v1/node/resize-network
+              <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200/80 space-y-1">
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">Network Address</span>
+                <span className="text-[11px] text-zinc-700 font-mono break-all block" title={resizingNode.networkAddress}>
+                  {resizingNode.networkAddress || resizingNode.networkId || resizingNode.id.substring(0, 12)}
+                </span>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">

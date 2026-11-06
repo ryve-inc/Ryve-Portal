@@ -48,15 +48,13 @@ export async function GET(request: Request) {
         success: true,
         online: true,
         data: res.data,
-        daemonUrl: config.daemonUrl,
       });
     }
 
     return NextResponse.json({
       success: true,
       online: false,
-      error: `Daemon is offline at ${config.daemonUrl}`,
-      daemonUrl: config.daemonUrl,
+      error: 'Storage node daemon is currently offline',
     });
   }
 
@@ -68,15 +66,13 @@ export async function GET(request: Request) {
         success: true,
         online: true,
         data: res.data,
-        daemonUrl: config.daemonUrl,
       });
     }
 
     return NextResponse.json({
       success: true,
       online: false,
-      error: `Cannot reach daemon at ${config.daemonUrl}`,
-      daemonUrl: config.daemonUrl,
+      error: 'Cannot reach storage node daemon',
     });
   }
 

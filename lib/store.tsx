@@ -120,7 +120,7 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
         addToast({
           type: 'warning',
           title: 'Daemon Offline',
-          description: json.error || 'Daemon at http://localhost:7890 is not reachable',
+          description: json.error || 'Storage node daemon is not reachable',
         });
         return null;
       }

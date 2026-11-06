@@ -133,7 +133,7 @@ export function Navbar() {
               <button
                 onClick={() => checkDaemonHealth()}
                 disabled={isDaemonChecking}
-                title="Check Daemon Health (GET /health)"
+                title="Check Daemon Health"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/90 rounded-xl text-xs font-medium text-zinc-700 transition-colors cursor-pointer"
               >
                 <Activity className={`w-3.5 h-3.5 ${daemonHealth?.nodeReady ? 'text-emerald-600' : 'text-zinc-400'}`} />
@@ -145,7 +145,7 @@ export function Navbar() {
               {/* Daemon Status Button */}
               <button
                 onClick={handleOpenStatusModal}
-                title="View Daemon Status & Storage Overview (GET /api/v1/node/status)"
+                title="View Daemon Status & Storage Overview"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/90 rounded-xl text-xs font-medium text-zinc-700 transition-colors cursor-pointer"
               >
                 <Server className="w-3.5 h-3.5 text-emerald-600" />
