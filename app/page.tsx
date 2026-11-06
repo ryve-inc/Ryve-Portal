@@ -3,10 +3,10 @@
 import React from 'react';
 import { useRyve } from '@/lib/store';
 import { useSession } from '@/lib/auth-client';
-import { LandingPage } from '@/components/LandingPage';
+import { LandingPage } from './_components/LandingPage';
 import { Navbar } from '@/components/Navbar';
-import { DashboardView } from '@/components/DashboardView';
-import { GetNodesView } from '@/components/GetNodesView';
+import { DashboardView } from './_components/DashboardView';
+import { GetNodesView } from './_components/GetNodesView';
 
 function AuthenticatedPortal() {
   const { activeTab, setActiveTab } = useRyve();

@@ -19,7 +19,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { DaemonStatusModal } from './DaemonStatusModal';
+import { DaemonStatusModal } from '@/components/DaemonStatusModal';
 
 export function DashboardView() {
   const { 

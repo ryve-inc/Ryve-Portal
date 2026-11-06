@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { SignUpForm } from '@/components/auth/SignUpForm';
+import { SignUpForm } from './_components/SignUpForm';
 import { ArrowLeft, ShieldCheck, Server, HardDrive } from 'lucide-react';
 
 export const metadata = {
