@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Organization, AllocatedNode, DaemonHealth, DaemonStatus, Toast } from '@/types/ryve';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { Organization, AllocatedNode, Toast } from '@/types/ryve';
 import { useSession } from '@/lib/auth-client';
 
 interface RyveContextType {
@@ -12,14 +12,7 @@ interface RyveContextType {
   isLoading: boolean;
   allocateNode: (data: { capacityGb: number; networkAddress: string; durationMonths: number; name?: string }) => Promise<AllocatedNode>;
   refreshData: () => Promise<void>;
-
-  // Daemon API Actions & States
-  daemonHealth: DaemonHealth | null;
-  daemonStatus: DaemonStatus | null;
-  isDaemonChecking: boolean;
-  checkDaemonHealth: () => Promise<DaemonHealth | null>;
-  getDaemonStatus: () => Promise<DaemonStatus | null>;
-  upgradeNodeCapacity: (nodeId: string, networkId: string | null | undefined, newGb: number) => Promise<boolean>;
+  upgradeNodeCapacity: (nodeId: string, networkId: string | null | undefined, newGb: number, networkAddress?: string) => Promise<boolean>;
   leaveNodeNetwork: (nodeId: string, networkId: string | null | undefined, networkAddress?: string) => Promise<boolean>;
 
   // Toasts
@@ -39,10 +32,9 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // Daemon state
-  const [daemonHealth, setDaemonHealth] = useState<DaemonHealth | null>(null);
-  const [daemonStatus, setDaemonStatus] = useState<DaemonStatus | null>(null);
-  const [isDaemonChecking, setIsDaemonChecking] = useState<boolean>(false);
+  // Track if initial load has fetched nodes once on reload
+  const hasFetchedRef = useRef(false);
+  const userId = session?.user?.id;
 
   // Toast Helpers
   const removeToast = useCallback((id: string) => {
@@ -60,115 +52,89 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     [removeToast]
   );
 
-  // Fetch Organization & Nodes from API (called on session or manual refresh)
+  // Manual refresh helper if explicitly invoked
   const refreshData = useCallback(async () => {
-    if (!session) {
-      setOrganization(null);
-      setNodes([]);
-      setIsLoading(false);
-      return;
-    }
-
+    if (!userId) return;
     try {
-      setIsLoading(true);
+      const [orgRes, nodesRes] = await Promise.all([
+        fetch('/api/organization'),
+        fetch('/api/nodes'),
+      ]);
+      const orgData = await orgRes.json().catch(() => null);
+      const nodesData = await nodesRes.json().catch(() => null);
 
-      // 1. Fetch organization
-      const orgRes = await fetch('/api/organization');
-      const orgData = await orgRes.json();
-      if (orgData.success && orgData.organization) {
+      if (orgData?.success && orgData.organization) {
         setOrganization(orgData.organization);
       }
-
-      // 2. Fetch allocated nodes
-      const nodesRes = await fetch('/api/nodes');
-      const nodesData = await nodesRes.json();
-      if (nodesData.success && Array.isArray(nodesData.nodes)) {
+      if (nodesData?.success && Array.isArray(nodesData.nodes)) {
         setNodes(nodesData.nodes);
       }
     } catch {
-      // Silently catch background network sync without showing errors in frontend
-    } finally {
-      setIsLoading(false);
+      // Silently catch background errors
     }
-  }, [session]);
+  }, [userId]);
 
-  // Initial fetch on session load
+  // Fetch Organization & Nodes from API ONLY once when page is loaded / reloaded
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    if (!userId) {
+      if (!session) {
+        setOrganization(null);
+        setNodes([]);
+        setIsLoading(false);
+        hasFetchedRef.current = false;
+      }
+      return;
+    }
+
+    // Already fetched on this page reload — do not reload or refetch on re-renders or tab switches
+    if (hasFetchedRef.current) {
+      return;
+    }
+    hasFetchedRef.current = true;
+
+    let isMounted = true;
+
+    const fetchOnReload = async () => {
+      try {
+        setIsLoading(true);
+
+        const [orgRes, nodesRes] = await Promise.all([
+          fetch('/api/organization'),
+          fetch('/api/nodes'),
+        ]);
+
+        const orgData = await orgRes.json().catch(() => null);
+        const nodesData = await nodesRes.json().catch(() => null);
+
+        if (isMounted) {
+          if (orgData?.success && orgData.organization) {
+            setOrganization(orgData.organization);
+          }
+          if (nodesData?.success && Array.isArray(nodesData.nodes)) {
+            setNodes(nodesData.nodes);
+          }
+        }
+      } catch {
+        // Silently catch network errors
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchOnReload();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, session]);
 
   // ===========================================================================
-  // Daemon API Actions (Invoked on Button Clicks Only - No auto-polling)
+  // Daemon API Actions (No health/monitor polling)
   // ===========================================================================
 
-  // 1. Health Check
-  const checkDaemonHealth = async (): Promise<DaemonHealth | null> => {
-    setIsDaemonChecking(true);
-    try {
-      const res = await fetch('/api/daemon?action=health');
-      const json = await res.json();
-      if (json.online && json.data) {
-        setDaemonHealth(json.data);
-        addToast({
-          type: 'success',
-          title: 'Daemon Online',
-          description: `Uptime: ${json.data.uptimeSeconds}s (Node Ready: ${json.data.nodeReady})`,
-        });
-        return json.data;
-      } else {
-        setDaemonHealth(null);
-        addToast({
-          type: 'warning',
-          title: 'Daemon Offline',
-          description: json.error || 'Storage node daemon is not reachable',
-        });
-        return null;
-      }
-    } catch {
-      setDaemonHealth(null);
-      addToast({
-        type: 'warning',
-        title: 'Daemon Unreachable',
-        description: 'Ensure node daemon is started with node dist/daemon/index.js',
-      });
-      return null;
-    } finally {
-      setIsDaemonChecking(false);
-    }
-  };
-
-  // 2. Node Status Overview
-  const getDaemonStatus = async (): Promise<DaemonStatus | null> => {
-    setIsDaemonChecking(true);
-    try {
-      const res = await fetch('/api/daemon?action=status');
-      const json = await res.json();
-      if (json.online && json.data) {
-        setDaemonStatus(json.data);
-        addToast({
-          type: 'info',
-          title: 'Daemon Status Synced',
-          description: `${json.data.networksCount || 0} active networks, ${json.data.storage?.totalFreeDiskGb || 0} GB free disk`,
-        });
-        return json.data;
-      } else {
-        setDaemonStatus(null);
-        addToast({
-          type: 'warning',
-          title: 'Daemon Status Unavailable',
-          description: json.error || 'Daemon is offline',
-        });
-        return null;
-      }
-    } catch {
-      setDaemonStatus(null);
-      return null;
-    } finally {
-      setIsDaemonChecking(false);
-    }
-  };
-
-  // 3. Allocate / Join Network (Calls Daemon POST /api/v1/node/join-network)
+  // 1. Allocate / Join Network (Calls Daemon POST /api/v1/node/join-network)
   const allocateNode = async (data: { capacityGb: number; networkAddress: string; durationMonths: number; name?: string }) => {
     try {
       const res = await fetch('/api/daemon?action=join', {
@@ -226,15 +192,21 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     return fallbackNode;
   };
 
-  // 4. Upgrade / Resize Network Capacity (Calls Daemon POST /api/v1/node/resize-network)
-  const upgradeNodeCapacity = async (nodeId: string, networkId: string | null | undefined, newGb: number): Promise<boolean> => {
+  // 2. Upgrade / Resize Network Capacity (Calls Daemon POST /api/v1/node/resize-network with actual p2p-drive:// url)
+  const upgradeNodeCapacity = async (
+    nodeId: string,
+    networkId: string | null | undefined,
+    newGb: number,
+    networkAddress?: string
+  ): Promise<boolean> => {
     try {
       const res = await fetch('/api/daemon?action=upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nodeId,
-          networkId: networkId || 'a1b2c3d4e5f6',
+          networkId: networkId || '',
+          networkAddress: networkAddress || '',
           allocatedGb: newGb,
         }),
       });
@@ -266,8 +238,12 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  // 5. Leave Network / Decommission Node (Calls Daemon POST /api/v1/node/leave-network)
-  const leaveNodeNetwork = async (nodeId: string, networkId: string | null | undefined, networkAddress?: string): Promise<boolean> => {
+  // 3. Leave Network / Decommission Node (Calls Daemon POST /api/v1/node/leave-network)
+  const leaveNodeNetwork = async (
+    nodeId: string,
+    networkId: string | null | undefined,
+    networkAddress?: string
+  ): Promise<boolean> => {
     try {
       const res = await fetch('/api/daemon?action=leave', {
         method: 'POST',
@@ -316,13 +292,6 @@ export function RyveProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         allocateNode,
         refreshData,
-
-        // Daemon API controls
-        daemonHealth,
-        daemonStatus,
-        isDaemonChecking,
-        checkDaemonHealth,
-        getDaemonStatus,
         upgradeNodeCapacity,
         leaveNodeNetwork,
 
@@ -344,4 +313,3 @@ export function useRyve() {
   }
   return context;
 }
-

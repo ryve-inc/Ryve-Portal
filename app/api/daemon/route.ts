@@ -35,53 +35,6 @@ async function callDaemon(path: string, options: RequestInit = {}) {
   }
 }
 
-// GET handler: health & status
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action') || 'health';
-
-  if (action === 'health') {
-    // 1. Health check: GET /health
-    const res = await callDaemon('/health');
-    if (res.ok && res.data) {
-      return NextResponse.json({
-        success: true,
-        online: true,
-        data: res.data,
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      online: false,
-      error: 'Storage node daemon is currently offline',
-    });
-  }
-
-  if (action === 'status') {
-    // 2. Node status & storage overview: GET /api/v1/node/status
-    const res = await callDaemon('/api/v1/node/status');
-    if (res.ok && res.data) {
-      return NextResponse.json({
-        success: true,
-        online: true,
-        data: res.data,
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      online: false,
-      error: 'Cannot reach storage node daemon',
-    });
-  }
-
-  return NextResponse.json(
-    { success: false, error: 'Unknown action' },
-    { status: 400 }
-  );
-}
-
 // POST handler: join, upgrade/resize, leave
 export async function POST(request: Request) {
   try {
@@ -207,16 +160,46 @@ export async function POST(request: Request) {
     // 2. UPGRADE / RESIZE NETWORK: POST /api/v1/node/resize-network
     // =========================================================================
     if (action === 'upgrade' || action === 'resize') {
-      const { nodeId, networkId, allocatedGb } = body;
+      const { nodeId, networkId, networkAddress, allocatedGb } = body;
       const newGb = Math.max(0.1, parseFloat(allocatedGb) || 1);
 
-      // Call daemon API
+      // The daemon expects the actual p2p-drive:// URL, not only the network id alone
+      let networkLink = (networkAddress && typeof networkAddress === 'string' && networkAddress.startsWith('p2p-drive://'))
+        ? networkAddress
+        : '';
+
+      // If not provided in body, query database by nodeId to get the registered p2p-drive:// address
+      if (!networkLink && nodeId) {
+        try {
+          const found = await db
+            .select()
+            .from(schema.nodes)
+            .where(eq(schema.nodes.id, nodeId))
+            .limit(1);
+          if (found.length > 0 && found[0].networkAddress && found[0].networkAddress.startsWith('p2p-drive://')) {
+            networkLink = found[0].networkAddress;
+          }
+        } catch {}
+      }
+
+      // If still not found, check if networkId itself was a full p2p-drive:// URI
+      if (!networkLink && networkId && typeof networkId === 'string' && networkId.startsWith('p2p-drive://')) {
+        networkLink = networkId;
+      }
+
+      // Fallback to whatever identifier is available
+      if (!networkLink) {
+        networkLink = networkAddress || networkId || '';
+      }
+
+      // Call daemon API with the actual p2p-drive:// URL
       let daemonMsg = '';
-      if (networkId) {
+      if (networkLink) {
         const daemonRes = await callDaemon('/api/v1/node/resize-network', {
           method: 'POST',
           body: JSON.stringify({
-            networkId,
+            networkId: networkLink,
+            networkLink: networkLink,
             allocatedGb: newGb,
           }),
         });
@@ -247,18 +230,40 @@ export async function POST(request: Request) {
       const { nodeId, networkId, networkAddress } = body;
 
       // The daemon expects the full p2p-drive:// networkLink, not just the short networkId.
-      // networkAddress stores the original p2p link used when joining.
-      const networkLink = (networkAddress && networkAddress.startsWith('p2p-drive://'))
+      let networkLink = (networkAddress && typeof networkAddress === 'string' && networkAddress.startsWith('p2p-drive://'))
         ? networkAddress
-        : networkId || '';
+        : '';
 
-      // Call daemon API
+      // If not passed, query database by nodeId
+      if (!networkLink && nodeId) {
+        try {
+          const found = await db
+            .select()
+            .from(schema.nodes)
+            .where(eq(schema.nodes.id, nodeId))
+            .limit(1);
+          if (found.length > 0 && found[0].networkAddress && found[0].networkAddress.startsWith('p2p-drive://')) {
+            networkLink = found[0].networkAddress;
+          }
+        } catch {}
+      }
+
+      if (!networkLink && networkId && typeof networkId === 'string' && networkId.startsWith('p2p-drive://')) {
+        networkLink = networkId;
+      }
+
+      if (!networkLink) {
+        networkLink = networkAddress || networkId || '';
+      }
+
+      // Call daemon API with full p2p-drive:// networkLink
       let daemonMsg = '';
       if (networkLink) {
         const daemonRes = await callDaemon('/api/v1/node/leave-network', {
           method: 'POST',
           body: JSON.stringify({
             networkId: networkLink,
+            networkLink: networkLink,
           }),
         });
         daemonMsg = daemonRes.data?.message || '';
@@ -292,4 +297,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
