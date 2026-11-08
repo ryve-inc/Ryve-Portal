@@ -60,11 +60,13 @@ export const config = {
 
   // Ryve Storage Node Daemon URL (Headless P2P Node)
   daemonUrl:
+    process.env.RYVE_NODE_URL ||
     process.env.RYVE_DAEMON_URL ||
     process.env.DAEMON_URL ||
     'http://localhost:7890',
 
   daemonApiKey:
+    process.env.RYVE_NODE_API_KEY ||
     process.env.RYVE_API_KEY ||
     '',
 };
